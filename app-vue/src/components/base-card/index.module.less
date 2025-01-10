@@ -1,0 +1,48 @@
+.baseCard {
+  width: 100%;
+  background: white;
+  padding: 10px 20px;
+  box-shadow: 0 0 5px #c5c5c5;
+  // overflow: hidden;
+  border-radius: 5px;
+
+  &:after {
+    content: '';
+    display: block;
+    visibility: hidden;
+    clear: both;
+  }
+
+  .baseCardTitle {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 32px;
+    position: relative;
+    padding-left: 15px;
+    padding-bottom: 7px;
+    border-bottom: 1px #ededed solid;
+    overflow: hidden;
+
+    .hl {
+      width: 5px;
+      display: inline-block;
+      background: #1889f1;
+      height: 23px;
+      position: absolute;
+      top: 5px;
+      left: 0;
+      border-radius: 20px;
+    }
+
+    .addonAfter {
+      display: inline-block;
+      float: right;
+    }
+  }
+
+  .baseCardBody {
+    margin-top: 10px;
+    height: calc(100% - 32px - 10px);
+
+  }
+}

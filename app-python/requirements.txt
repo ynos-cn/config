@@ -1,0 +1,11 @@
+django
+mysqlclient
+pyjwt
+django-redis
+djangorestframework
+bcrypt
+ebooklib
+WeasyPrint
+pycairo
+pillow
+weasyprint

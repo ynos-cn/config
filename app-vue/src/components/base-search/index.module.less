@@ -1,0 +1,39 @@
+.search {
+  &:after {
+    content: '';
+    display: block;
+    visibility: hidden;
+    clear: both;
+  }
+
+  .keywordInput {
+    width: 200px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    float: left;
+  }
+
+  .funBtn {
+    float: left;
+
+    .searchButton {
+      margin-right: 10px;
+    }
+
+  }
+
+  .dynamicDiv {
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+
+    &.showLabelDynamicDiv {
+      display: flex;
+      line-height: 32px;
+
+      * {
+        flex: 1;
+      }
+    }
+  }
+}

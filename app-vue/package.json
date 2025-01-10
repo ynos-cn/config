@@ -1,0 +1,93 @@
+{
+  "name": "pos-vue",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build:web": "vite build --mode production",
+    "dev:web": "vite --mode development",
+    "dev": "vite --config vite.config-dev.ts --mode development",
+    "version": "node ./scripts/generate-version.cjs",
+    "serve": "concurrently vite",
+    "build": "rimraf dist-electron && rimraf app_client && vite build --config vite.config-dev.ts && electron-builder build --mac --win --publish never"
+  },
+  "main": "dist-electron/main.js",
+  "build": {
+    "appId": "appId",
+    "productName": "app",
+    "directories": {
+      "output": "app_client"
+    },
+    "mac": {
+      "icon": "dist-electron/favicon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "icon": "dist-electron/favicon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "@vitejs/plugin-legacy": "^2.0.0",
+    "@vitejs/plugin-vue-jsx": "^2.1.1",
+    "@vueuse/core": "^11.1.0",
+    "ant-design-vue": "^4.2.1",
+    "axios": "^0.27.2",
+    "dayjs": "^1.11.6",
+    "deepmerge": "^4.2.2",
+    "js-cookie": "^3.0.1",
+    "nprogress": "^0.2.0",
+    "pinia": "^2.2.2",
+    "terser": "^5.26.0",
+    "vite-plugin-compression": "^0.5.1",
+    "vue": "^3.2.27",
+    "vue-router": "^4.0.14",
+    "vue3-drag-resize": "^2.0.5",
+    "vue3-tree-org": "^3.3.0",
+    "vuedraggable": "^4.1.0",
+    "ynos-storage": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.2",
+    "@types/node": "^17.0.38",
+    "@types/nprogress": "^0.2.0",
+    "@vitejs/plugin-vue": "^3.2.0",
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.2",
+    "electron-builder": "^24.13.3",
+    "electron-devtools-installer": "^3.2.0",
+    "less": "^3.0.4",
+    "rimraf": "^5.0.5",
+    "typescript": "^4.3.2",
+    "vite": "^3.2.5",
+    "vite-plugin-electron": "^0.15.6",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue-tsc": "^0.0.24"
+  }
+}

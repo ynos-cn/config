@@ -1,0 +1,9 @@
+src/components/version
+version/*
+
+web
+dist-electron
+app_client
+.vscode
+node_modules
+package-lock.json
