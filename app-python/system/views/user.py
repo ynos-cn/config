@@ -34,7 +34,7 @@ def create(request: HttpRequest):
             org_id = request.user.get("orgId")
             org_name = request.user.get("orgName")
 
-        user = User.objects.filter(phone=phone, org_id=org_id).first()
+        user = User.objects.using("system_db").using('users_db').filter(phone=phone, org_id=org_id).first()
         if user:
             return JsonResponse(
                 json_response(
@@ -57,7 +57,7 @@ def create(request: HttpRequest):
             "password": bcrypt.hashpw(password.encode(), bcrypt.gensalt(10)).decode(),
         }
 
-        serializer = UserSerializer(User.objects.create(**data), many=False)
+        serializer = UserSerializer(User.objects.using("system_db").create(**data), many=False)
 
         return JsonResponse(
             json_response(code=200, msg="创建成功", data=serializer.data, success=True),
@@ -105,7 +105,7 @@ def update(request: HttpRequest):
         query_data &= ~Q(id=id)
         query_data &= Q(phone=phone)
         query_data &= Q(org_id=org_id)
-        user = User.objects.filter(query_data).first()
+        user = User.objects.using("system_db").filter(query_data).first()
         if user:
             return JsonResponse(
                 json_response(
@@ -129,8 +129,8 @@ def update(request: HttpRequest):
             del data["org_id"]
             del data["org_name"]
 
-        User.objects.filter(id=id).update(**data)
-        user = User.objects.filter(id=id).first()
+        User.objects.using("system_db").filter(id=id).update(**data)
+        user = User.objects.using("system_db").filter(id=id).first()
         serializer = UserSerializer(user, many=False)
 
         get_redis_cli().delete(f"user:{user.org_id}_{user.id}")
@@ -162,8 +162,8 @@ def find(request: HttpRequest):
 
     try:
         # 查询用户 进行分页查询
-        list_data = User.objects.filter(query_data).order_by(*sorter)
-        total = User.objects.filter(query_data).count()
+        list_data = User.objects.using("system_db").filter(query_data).order_by(*sorter)
+        total = User.objects.using("system_db").filter(query_data).count()
 
         if limit != -1:
             paginator = Paginator(list_data, limit)

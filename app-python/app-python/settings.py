@@ -87,7 +87,15 @@ WSGI_APPLICATION = "app-python.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "pos",
+        "NAME": "config_db",
+        "USER": "root",
+        "PASSWORD": "app123456.",
+        "HOST": "sk.yn59.cn",
+        "PORT": "13306",
+    },
+    "system_db": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "system_db",
         "USER": "root",
         "PASSWORD": "app123456.",
         "HOST": "sk.yn59.cn",
@@ -98,7 +106,7 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://sk.yn59.cn:16379/2",
+        "LOCATION": "redis://sk.yn59.cn:16379/4",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
@@ -108,7 +116,7 @@ CACHES = {
     },
     "business": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://sk.yn59.cn:16379/3",
+        "LOCATION": "redis://sk.yn59.cn:16379/5",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CLIENT_CLASS": "django_redis.client.DefaultClient",

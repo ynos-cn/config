@@ -16,7 +16,7 @@ def delete_model_instances(
     """
     if soft_delete:
         # 逻辑删除
-        model_class.objects.filter(id__in=instance_ids).update(is_delete=1)
+        model_class.objects.using("system_db").filter(id__in=instance_ids).update(is_delete=1)
     else:
         # 物理删除
-        model_class.objects.filter(id__in=instance_ids).delete()
+        model_class.objects.using("system_db").filter(id__in=instance_ids).delete()

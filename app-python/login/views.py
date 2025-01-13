@@ -39,7 +39,7 @@ def login(request: HttpRequest):
                 status=400,
             )
 
-        user = User.objects.filter(Q(phone=phone) | Q(email=phone)).first()
+        user = User.objects.using("system_db").filter(Q(phone=phone) | Q(email=phone)).first()
         logger.info(f"查询到用户: {user}")
 
         if user is None:
@@ -212,7 +212,7 @@ def code_login(request: HttpRequest):
         )
 
     # 查询数据库是否存在该手机号
-    user = User.objects.filter(phone=phone, code=country_code).first()
+    user = User.objects.using("system_db").filter(phone=phone, code=country_code).first()
     if user is None:
         return JsonResponse(
             json_response(code=400, msg="手机号不存在", success=False),
@@ -304,7 +304,7 @@ def code_register(request: HttpRequest):
         )
 
     # 查询数据库是否存在该手机号
-    user = User.objects.filter(phone=phone, code=country_code).first()
+    user = User.objects.using("system_db").filter(phone=phone, code=country_code).first()
     msg = "注册"
     if user is None:
         # 创建用户
@@ -321,7 +321,7 @@ def code_register(request: HttpRequest):
             "last_login": datetime.now(),
         }
 
-        serializer = UserSerializer(User.objects.create(**_user))
+        serializer = UserSerializer(User.objects.using("system_db").create(**_user))
     else:
         msg = "登录"
         user.last_login = datetime.now()

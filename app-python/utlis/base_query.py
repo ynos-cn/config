@@ -93,7 +93,7 @@ def get_user_organizations(org_id):
 
     # 递归函数来查找所有子机构
     def get_children(org_id):
-        children = Org.objects.filter(org_id=org_id)
+        children = Org.objects.using("system_db").filter(org_id=org_id)
         for child in children:
             organizations.add(child.id)
             get_children(child.id)
