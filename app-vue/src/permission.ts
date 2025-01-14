@@ -19,7 +19,7 @@ router.beforeEach((to, from, next) => {
   NProgress.start()
   // 中断上一页的请求
   cancelTokenStore.removeHttpRequestMap()
-  if (to.path === '/login') {
+  if (to.path === '/login/login') {
     next()
     NProgress.done()
   }
@@ -35,7 +35,7 @@ router.beforeEach((to, from, next) => {
   to.meta && (typeof to.meta.title !== 'undefined' && setDocumentTitle(to))
   if (getToken()) {
     // 如果已认证，并且又请求登录页面，则返回首页
-    if (to.path === '/login') {
+    if (to.path === '/login/login') {
       next({ path: '/' })
       NProgress.done()
       return;
@@ -47,7 +47,7 @@ router.beforeEach((to, from, next) => {
         NProgress.done()
       }).catch(() => {
         // 跳转到登录页面
-        next({ path: '/login' })
+        next({ path: '/login/login' })
         NProgress.done() // if current page is login will not trigger afterEach hook, so manually handle it
       })
       return;
@@ -64,7 +64,7 @@ router.beforeEach((to, from, next) => {
       appStore.isAuth().then(() => {
         next({ path: (to.fullPath ? to.fullPath : to.path) as any, query: to.query, params: to.params })
       }).catch(() => {
-        next("/login")
+        next("/login/login")
         NProgress.done()
       })
     }

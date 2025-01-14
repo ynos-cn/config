@@ -1,67 +1,39 @@
-/*
- * @Description: 路由配置
- * @Version: 1.0
- * @Autor: jiajun.wu
- * @Date: 2023-08-04 10:28:53
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2024-01-16 15:44:27
- */
 import { BasicLayout, UserLayout } from '@/components/layouts'
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router"
 
 const routers: Array<RouteRecordRaw> = [
-  // {
-  //   path: '/',
-  //   name: 'index',
-  //   component: BasicLayout,
-  //   meta: { title: '首页' },
-  //   children: [
-  //   ],
-  // },
   {
     path: '/',
-    name: 'system',
+    name: 'index',
     component: BasicLayout,
-    meta: { title: '系统管理' },
-    redirect: '/org',
+    meta: { title: '配置中心' },
+    redirect: '/home',
     children: [
       {
-        path: '/org',
-        name: 'org',
-        component: () => import('@/views/system/org/manage.vue'),
-        meta: { title: '机构管理' }
-      },
-      {
-        path: '/role',
-        name: 'role',
-        component: () => import('@/views/system/role/manage.vue'),
-        meta: { title: '角色管理' }
-      },
-      {
-        path: '/users',
-        name: 'users',
-        component: () => import('@/views/system/users/manage.vue'),
-        meta: { title: '员工管理' }
+        path: '/home',
+        name: 'home',
+        component: () => import('@/views/project/index.vue'),
+        meta: { title: '配置中心' }
       },
     ],
   },
   {
-    path: '/',
+    path: '/login',
     component: UserLayout,
-    // redirect: '/login',
+    redirect: '/login/login',
     meta: {
       title: "登录",
       hidden: true,
     },
     children: [
       {
-        path: '/login',
+        path: '/login/login',
         name: 'login',
-        component: () => import('@/views/login/index.vue'),
+        component: () => import('@/views/login/login.vue'),
         meta: { title: '登录' }
       },
       {
-        path: 'register',
+        path: '/login/register',
         name: 'register',
         component: () => import('@/views/login/Register.vue'),
         meta: { title: '注册' }

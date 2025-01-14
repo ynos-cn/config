@@ -27,6 +27,7 @@ prefix = "api/"
 urlpatterns = [
     path(f"{prefix}login/", include("login.urls")),
     path(f"{prefix}sys/", include("system.urls")),
+    path(f"{prefix}config/", include("config.urls")),
 ]
 
 handler400 = custom_400_view

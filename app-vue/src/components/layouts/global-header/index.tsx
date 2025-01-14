@@ -2,9 +2,6 @@
  * @Description: 头部
  * @Version: 1.0
  * @Autor: jiajun.wu
- * @Date: 2022-07-27 14:06:32
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2024-01-15 17:54:42
  */
 import { defineComponent, h } from 'vue'
 import classes from './index.module.less'

@@ -12,7 +12,7 @@ from utlis.utils import (
     json_response,
     new_call_id,
 )
-from ..models.org import Org, OrgSerializer
+from ..models.projcet import Project, ProjectSerializer
 from rest_framework.parsers import JSONParser
 from utlis.decorators import GET, POST, auth_user, DELETE
 from utlis.log import logger
@@ -23,64 +23,64 @@ from django.db.models import Q
 @auth_user()
 def create(request: HttpRequest):
     print(f"\n")
-    logger.info("============= 进入 创建机构 =============")
+    logger.info("============= 进入 创建项目 =============")
     logger.info(f"操作人: {request.user}")
 
     body = JSONParser().parse(request)
     logger.info(f"body: {body}")
-    name = body.get("name")
-    controllerName = body.get("controllerName")
-    controllerTel = body.get("controllerTel")
-    org_id = request.user.get("orgId")
-    org_name = request.user.get("orgName")
+    app_name = body.get("appName")
+    project_managers = body.get("projectManagers")
 
-    if body.get("orgId"):
-        org_id = body.get("orgId")
-    if body.get("orgName"):
-        org_name = body.get("orgName")
-
-    if not name:
+    if not app_name:
         return JsonResponse(
-            json_response(code=400, msg="机构名称不能为空", success=False), status=400
+            json_response(code=400, msg="项目名称不能为空", success=False), status=400
+        )
+    if not project_managers:
+        return JsonResponse(
+            json_response(code=400, msg="负责人不能为空", success=False), status=400
         )
 
     try:
         query_data = Q()
-        query_data &= Q(name=name)
+        query_data &= Q(app_name=app_name)
         query_data &= ~Q(is_delete=1)
-        org = Org.objects.using("system_db").filter(query_data).first()
+        org = Project.objects.using("system_db").filter(query_data).first()
 
         if org:
             return JsonResponse(
                 json_response(
-                    code=400, msg=f"{name} 机构已存在", data=org.id, success=False
+                    code=400,
+                    msg=f"{app_name} 项目名称已存在",
+                    data=org.id,
+                    success=False,
                 ),
                 status=400,
             )
 
-        user_id = request.user.get("id")
+        user_name = request.user.get("username")
 
         data = {
-            "id": new_call_id(),
-            "name": name,
-            "code": body.get("code"),
-            "controller_name": controllerName,
-            "controller_tel": controllerTel,
-            "create_by_id": user_id,
-            "update_by_id": user_id,
-            "org_id": org_id,
-            "org_name": org_name,
+            "app_name": app_name,
+            "app_id": new_call_id(),
+            "project_managers": project_managers,
+            "description": body.get("description"),
+            "pull_switch": body.get("pullSwitch"),
+            "env_switch": body.get("envSwitch"),
+            "creator": user_name,
+            "updater": user_name,
+            "org_id": request.user.get("orgId"),
+            "org_name": request.user.get("orgName"),
         }
 
-        serializer = OrgSerializer(
-            Org.objects.using("system_db").create(**data), many=False
+        serializer = ProjectSerializer(
+            Project.objects.using("default").create(**data), many=False
         )
 
         delete_user_organizations()
 
         return JsonResponse(
             json_response(
-                msg=f"{serializer.data.get('name')} 机构创建成功",
+                msg=f"{serializer.data.get('name')} 项目创建成功",
                 data=serializer.data,
                 success=True,
             ),
@@ -136,7 +136,7 @@ def update(request: HttpRequest):
         query_data &= ~Q(id=id)
         query_data &= Q(name=name)
         query_data &= ~Q(is_delete=1)
-        org = Org.objects.using("system_db").filter(query_data).first()
+        org = Project.objects.using("system_db").filter(query_data).first()
         if org:
             return JsonResponse(
                 json_response(
@@ -159,9 +159,9 @@ def update(request: HttpRequest):
             data["org_id"] = request.user.get("orgId")
             data["org_name"] = request.user.get("orgName")
 
-        Org.objects.using("system_db").filter(id=id).update(**data)
-        org = Org.objects.using("system_db").filter(id=id).first()
-        serializer = OrgSerializer(org, many=False)
+        Project.objects.using("system_db").filter(id=id).update(**data)
+        org = Project.objects.using("system_db").filter(id=id).first()
+        serializer = ProjectSerializer(org, many=False)
 
         delete_user_organizations()
 
@@ -211,7 +211,7 @@ def update_org(request: HttpRequest):
         query_data = Q()
         query_data &= ~Q(id=id)
         query_data &= ~Q(is_delete=1)
-        org = Org.objects.using("system_db").filter(query_data).first()
+        org = Project.objects.using("system_db").filter(query_data).first()
         if not org:
             return JsonResponse(
                 json_response(code=400, msg=f"机构不存在", success=False),
@@ -224,9 +224,9 @@ def update_org(request: HttpRequest):
             "org_id": org_id,
             "org_name": org_name,
         }
-        Org.objects.using("system_db").filter(id=id).update(**data)
-        org = Org.objects.using("system_db").filter(id=id).first()
-        serializer = OrgSerializer(org, many=False)
+        Project.objects.using("system_db").filter(id=id).update(**data)
+        org = Project.objects.using("system_db").filter(id=id).first()
+        serializer = ProjectSerializer(org, many=False)
 
         delete_user_organizations()
 
@@ -258,13 +258,13 @@ def get_id(request: HttpRequest, id: str):
         )
 
     try:
-        org = Org.objects.using("system_db").filter(id=id).first()
+        org = Project.objects.using("system_db").filter(id=id).first()
         if not org:
             return JsonResponse(
                 json_response(code=400, msg="机构不存在", success=False), status=400
             )
 
-        serializer = OrgSerializer(org, many=False)
+        serializer = ProjectSerializer(org, many=False)
         return JsonResponse(
             json_response(
                 msg=f"{serializer.data.get('name')} 机构详情",
@@ -295,14 +295,14 @@ def find(request: HttpRequest):
 
     try:
         # 查询用户 进行分页查询
-        orgs = Org.objects.using("system_db").filter(query_data).order_by(*sorter)
-        total = Org.objects.using("system_db").filter(query_data).count()
+        orgs = Project.objects.using("system_db").filter(query_data).order_by(*sorter)
+        total = Project.objects.using("system_db").filter(query_data).count()
 
         if limit != -1:
             paginator = Paginator(orgs, limit)
             orgs = paginator.get_page(page)
 
-        user_list = OrgSerializer(orgs, many=True)
+        user_list = ProjectSerializer(orgs, many=True)
         # 返回数据
         return JsonResponse(
             json_response(msg="查询成功", data=user_list.data, total=total), safe=False
@@ -327,7 +327,7 @@ def delete(request: HttpRequest):
     if ids:
         try:
             delete_model_instances(
-                Org,
+                Project,
                 ids,
                 db="system_db",
             )

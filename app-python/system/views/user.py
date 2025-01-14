@@ -34,7 +34,12 @@ def create(request: HttpRequest):
             org_id = request.user.get("orgId")
             org_name = request.user.get("orgName")
 
-        user = User.objects.using("system_db").using('users_db').filter(phone=phone, org_id=org_id).first()
+        user = (
+            User.objects.using("system_db")
+            .using("users_db")
+            .filter(phone=phone, org_id=org_id)
+            .first()
+        )
         if user:
             return JsonResponse(
                 json_response(
@@ -57,7 +62,9 @@ def create(request: HttpRequest):
             "password": bcrypt.hashpw(password.encode(), bcrypt.gensalt(10)).decode(),
         }
 
-        serializer = UserSerializer(User.objects.using("system_db").create(**data), many=False)
+        serializer = UserSerializer(
+            User.objects.using("system_db").create(**data), many=False
+        )
 
         return JsonResponse(
             json_response(code=200, msg="创建成功", data=serializer.data, success=True),
@@ -193,7 +200,11 @@ def delete(request: HttpRequest):
 
     if ids:
         try:
-            delete_model_instances(User, ids)
+            delete_model_instances(
+                User,
+                ids,
+                db="system_db",
+            )
             return JsonResponse(
                 json_response(code=200, msg="删除成功", data=len(ids), success=True),
             )

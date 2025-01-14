@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "login",
     "system",
+    "config",
 ]
 
 JWT_AUTH = {
@@ -100,7 +101,7 @@ DATABASES = {
         "PASSWORD": "app123456.",
         "HOST": "sk.yn59.cn",
         "PORT": "13306",
-    }
+    },
 }
 
 CACHES = {

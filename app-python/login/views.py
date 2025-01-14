@@ -30,7 +30,9 @@ def login(request: HttpRequest):
 
         if not phone:
             return JsonResponse(
-                json_response(code=400, msg="用户名/邮箱不能为空", success=False),
+                json_response(
+                    code=400, msg="用户名/邮箱/手机号码不能为空", success=False
+                ),
                 status=400,
             )
         if not password:
@@ -39,7 +41,11 @@ def login(request: HttpRequest):
                 status=400,
             )
 
-        user = User.objects.using("system_db").filter(Q(phone=phone) | Q(email=phone)).first()
+        user = (
+            User.objects.using("system_db")
+            .filter(Q(phone=phone) | Q(email=phone) | Q(username=phone))
+            .first()
+        )
         logger.info(f"查询到用户: {user}")
 
         if user is None:
@@ -119,7 +125,7 @@ def logout(request: HttpRequest):
     except Exception as e:
         logger.error(f"退出登录失败: {e}")
 
-    return JsonResponse({"code": 200, "msg": "账号已退出"}, status=401)
+    return JsonResponse({"code": 200, "msg": "账号已退出"}, status=200)
 
 
 # 获取验证码
@@ -212,7 +218,9 @@ def code_login(request: HttpRequest):
         )
 
     # 查询数据库是否存在该手机号
-    user = User.objects.using("system_db").filter(phone=phone, code=country_code).first()
+    user = (
+        User.objects.using("system_db").filter(phone=phone, code=country_code).first()
+    )
     if user is None:
         return JsonResponse(
             json_response(code=400, msg="手机号不存在", success=False),
@@ -304,7 +312,9 @@ def code_register(request: HttpRequest):
         )
 
     # 查询数据库是否存在该手机号
-    user = User.objects.using("system_db").filter(phone=phone, code=country_code).first()
+    user = (
+        User.objects.using("system_db").filter(phone=phone, code=country_code).first()
+    )
     msg = "注册"
     if user is None:
         # 创建用户

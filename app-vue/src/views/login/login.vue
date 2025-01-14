@@ -8,7 +8,7 @@
         <a-tab-pane key="passwordType" tab="密码登录">
           <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px" message="账户或密码错误" />
           <a-form-item v-bind="validateInfos.phone">
-            <a-input size="large" type="text" placeholder="邮箱/手机号码" v-model:value="formRef.phone">
+            <a-input size="large" type="text" placeholder="用户名/邮箱/手机号码" v-model:value="formRef.phone">
               <template #prefix>
                 <UserOutlined :style="{ color: 'rgba(0,0,0,.25)' }" />
               </template>

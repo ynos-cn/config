@@ -35,6 +35,7 @@ def auth_user():
                         "id",
                         "createById",
                         "updateById",
+                        "username",
                         "joinTime",
                         "orgName",
                         "orgId",
