@@ -1,11 +1,3 @@
-/*
- * @Description: 权限、路由控制
- * @Version: 1.0
- * @Autor: JiaJun Wu
- * @Date: 2021-11-04 18:48:19
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-09-18 18:03:54
- */
 import router from "./router";
 import { useAppStore } from '@/store/app'
 import { useCancelTokenStore } from '@/store/cancelToken'

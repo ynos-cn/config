@@ -46,8 +46,7 @@ const routers: Array<RouteRecordRaw> = [
     ],
   },
   {
-    path: '/login',
-    name: 'login',
+    path: '/',
     component: UserLayout,
     // redirect: '/login',
     meta: {

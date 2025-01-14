@@ -25,8 +25,8 @@ def find(request: HttpRequest):
 
     try:
         # 查询用户 进行分页查询
-        users = User.objects.filter(query_data).order_by(*sorter)
-        total = User.objects.filter(query_data).count()
+        users = User.objects.using("system_db").filter(query_data).order_by(*sorter)
+        total = User.objects.using("system_db").filter(query_data).count()
 
         if limit != -1:
             paginator = Paginator(users, limit)
@@ -64,7 +64,7 @@ def reg(request: HttpRequest):
         )
 
     # 查询用户名是否存在，如果存在，则返回错误
-    if User.objects.filter(username=username).exists():
+    if User.objects.using("system_db").filter(username=username).exists():
         return JsonResponse(
             json_response(code=400, msg=f"{username} 用户名已存在", success=False),
             status=200,
@@ -72,7 +72,7 @@ def reg(request: HttpRequest):
     body["id"] = new_call_id()
     body["password"] = bcrypt.hashpw(password.encode(), bcrypt.gensalt(10)).decode()
     try:
-        serializer = UserSerializer(User.objects.create(**body))
+        serializer = UserSerializer(User.objects.using("system_db").create(**body))
         return JsonResponse(
             json_response(
                 msg=f"{serializer.data.get('username')} 用户注册成功",
@@ -103,7 +103,7 @@ def verifyPhone(request: HttpRequest):
         return JsonResponse(
             json_response(code=400, msg="手机号码不能为空", success=False), status=400
         )
-    if User.objects.filter(phone=phone, code=country_code).exists():
+    if User.objects.using("system_db").filter(phone=phone, code=country_code).exists():
         return JsonResponse(
             json_response(code=400, msg=f"{phone} 手机号码已存在", success=False),
             status=200,
@@ -128,7 +128,7 @@ def verifyEmail(request: HttpRequest):
         return JsonResponse(
             json_response(code=400, msg="邮箱不能为空", success=False), status=400
         )
-    if User.objects.filter(email=email).exists():
+    if User.objects.using("system_db").filter(email=email).exists():
         return JsonResponse(
             json_response(code=400, msg=f"{email} 邮箱已存在", success=False),
             status=200,
@@ -152,7 +152,7 @@ def verifyUsername(request: HttpRequest):
         return JsonResponse(
             json_response(code=400, msg="用户名不能为空", success=False), status=400
         )
-    if User.objects.filter(username=username).exists():
+    if User.objects.using("system_db").filter(username=username).exists():
         return JsonResponse(
             json_response(code=400, msg=f"{username} 用户名已存在", success=False),
             status=200,
@@ -182,7 +182,7 @@ def create(request: HttpRequest):
             json_response(code=400, msg="机构id不能为空", success=False), status=400
         )
 
-    org = Org.objects.filter(id=org_id).first()
+    org = Org.objects.using("system_db").filter(id=org_id).first()
     if not org:
         return JsonResponse(
             json_response(code=400, msg="机构不存在", data=org_id, success=False),
@@ -200,7 +200,7 @@ def create(request: HttpRequest):
     if "orgId" in body:
         del body["orgId"]
 
-    user = User.objects.filter(phone=phone, org_id=org_id).first()
+    user = User.objects.using("system_db").filter(phone=phone, org_id=org_id).first()
     if user:
         return JsonResponse(
             json_response(
@@ -209,7 +209,7 @@ def create(request: HttpRequest):
             status=200,
         )
 
-    serializer = UserSerializer(User.objects.create(**body), many=False)
+    serializer = UserSerializer(User.objects.using("system_db").create(**body), many=False)
 
     return JsonResponse(
         json_response(code=200, msg="创建成功", data=serializer.data, success=False),

@@ -25,7 +25,7 @@ def create(request: HttpRequest):
         )
 
     try:
-        role = Role.objects.filter(name=name, org_id=org_id).first()
+        role = Role.objects.using("system_db").filter(name=name, org_id=org_id).first()
         if role:
             return JsonResponse(
                 json_response(
@@ -44,7 +44,7 @@ def create(request: HttpRequest):
             "org_id": org_id,
         }
 
-        serializer = RoleSerializer(Role.objects.create(**data), many=False)
+        serializer = RoleSerializer(Role.objects.using("system_db").create(**data), many=False)
         return JsonResponse(
             json_response(
                 msg=f"{serializer.data.get('name')} 角色创建成功",
@@ -72,8 +72,8 @@ def find(request: HttpRequest):
 
     try:
         # 查询用户 进行分页查询
-        list_data = Role.objects.filter(query_data).order_by(*sorter)
-        total = Role.objects.filter(query_data).count()
+        list_data = Role.objects.using("system_db").filter(query_data).order_by(*sorter)
+        total = Role.objects.using("system_db").filter(query_data).count()
 
         if limit != -1:
             paginator = Paginator(list_data, limit)
