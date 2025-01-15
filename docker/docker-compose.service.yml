@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  ioa_service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.services
+    ports:
+      - "8892:8891"
+    volumes:
+      - ../app-python:/app-python
+    environment:
+      - PYTHONPATH=/app-python
+    extra_hosts:
+      - "sk.yn59.cn:192.168.1.99"
+    restart: always
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

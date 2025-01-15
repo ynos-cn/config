@@ -1,11 +1,3 @@
-/*
- * @Description: 
- * @Version: 1.0
- * @Autor: jiajun wu
- * @Date: 2022-07-09 10:56:21
- * @LastEditors: jiajun wu
- * @LastEditTime: 2022-07-14 14:42:46
- */
 /** 行政区数据结构 */
 export interface BaseAreaStruct {
   address: null | string

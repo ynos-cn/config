@@ -1,12 +1,3 @@
-/*
- * @Description: 基础接口
- * @Version: 1.0
- * @Autor: jiajun.wu
- * @Date: 2022-08-17 13:43:24
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-04-03 10:36:42
- */
-
 import { UserStruct } from "./user"
 
 /** 基础api请求类型 */

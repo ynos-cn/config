@@ -1,11 +1,3 @@
-/*
- * @Description: 
- * @Version: 1.0
- * @Autor: jiajun.wu
- * @Date: 2023-08-01 16:59:58
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-08-01 17:26:10
- */
 import { App } from "vue";
 interface Handlers {
   [key: string]: Array<Function>;

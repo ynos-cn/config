@@ -1,12 +1,9 @@
 /*
  * @Description: 公共方法 非hooks函数
  * @Version: 1.0
- * @Autor: jiajun.wu
- * @Date: 2023-08-01 11:37:05
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-08-03 11:21:56
  */
 import { LocalStorage, SessionStorage, Cookie } from './storage'
+import config from '@/config/defaultSettings'
 
 /**
  * 动态加载js资源
@@ -33,6 +30,20 @@ export const loadScript = (url: string) => {
       ; (document.body || head).appendChild(script)
   })
 }
+
+/** 跳转统一登录
+ *  @param {string} backurl 登录成功后返回的地址
+ */
+export const goToLogin = (backurl?: string) => {
+  let url: string = config.loginUrl as string
+  if (url.indexOf('?') < 0) {
+    url = url + '?';
+  }
+  backurl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + window.location.pathname + (backurl ? backurl : '');
+  backurl = encodeURIComponent(backurl);
+  window.location.href = url + '&backurl=' + backurl
+}
+
 
 /**
  * @description: 获取token

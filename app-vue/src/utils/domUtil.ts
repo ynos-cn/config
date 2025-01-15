@@ -1,10 +1,6 @@
 /*
  * @Description: dom 工具类
  * @Version: 1.0
- * @Autor: jiajun.wu
- * @Date: 2022-07-26 14:27:46
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2022-07-27 14:24:18
  */
 import { RouteLocationNormalized } from 'vue-router'
 import config from '@/config/defaultSettings'

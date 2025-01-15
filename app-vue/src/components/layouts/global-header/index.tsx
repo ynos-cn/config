@@ -30,16 +30,7 @@ const globalHeader = defineComponent({
           cancelText: '取消',
           onOk: () => {
             appStore.logout().finally(() => {
-              try {
-                import('electron').then(({ ipcRenderer }) => {
-                  ipcRenderer?.send('close')
-                }).finally(() => {
-                  location.reload();
-                })
-              } catch (error) {
-                console.error(error)
-                location.reload();
-              }
+              location.reload();
             })
           }
         });

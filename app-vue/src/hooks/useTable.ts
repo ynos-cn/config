@@ -1,10 +1,6 @@
 /*
  * @Description: 列表
  * @Version: 1.0
- * @Autor: jiajun wu
- * @Date: 2022-04-28 15:24:36
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-04-12 17:06:22
  */
 import { computed, ref, Ref } from 'vue'
 import { TablePaginationConfig } from 'ant-design-vue';

@@ -14,22 +14,8 @@ import { axios } from "@/utils/request";
  */
 export function isAuthed() {
   return axios<AuthResStruct>({
-    url: '/api/login/isAuth',
+    url: '/ioa/api/login/isAuth',
     method: "post"
-  })
-}
-
-/**
- *  登录
- */
-export function login(data: object) {
-  return axios({
-    url: '/api/login/login',
-    method: "post",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    data
   })
 }
 

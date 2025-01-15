@@ -1,5 +1,5 @@
-import { BasicLayout, UserLayout } from '@/components/layouts'
-import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router"
+import { BasicLayout } from '@/components/layouts'
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router"
 
 const routers: Array<RouteRecordRaw> = [
   {
@@ -18,29 +18,6 @@ const routers: Array<RouteRecordRaw> = [
     ],
   },
   {
-    path: '/login',
-    component: UserLayout,
-    redirect: '/login/login',
-    meta: {
-      title: "登录",
-      hidden: true,
-    },
-    children: [
-      {
-        path: '/login/login',
-        name: 'login',
-        component: () => import('@/views/login/login.vue'),
-        meta: { title: '登录' }
-      },
-      {
-        path: '/login/register',
-        name: 'register',
-        component: () => import('@/views/login/Register.vue'),
-        meta: { title: '注册' }
-      },
-    ]
-  },
-  {
     path: '/:pathMatch(.*)',
     name: '404',
     component: () => import('@/views/exception/404.vue'),
@@ -52,7 +29,7 @@ const routers: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory('config'),
   routes: routers as RouteRecordRaw[]
 })
 

@@ -1,12 +1,3 @@
-/*
- * @Description: 类型定义
- * @Version: 1.0
- * @Autor: jiajun wu
- * @Date: 2022-04-25 15:28:20
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2022-09-27 15:08:07
- */
-
 import { ColumnType, CompareFn, SortOrder } from "ant-design-vue/lib/table/interface"
 import { TooltipProps } from "ant-design-vue/lib/tooltip/Tooltip"
 import { Breakpoint } from "ant-design-vue/lib/_util/responsiveObserve"

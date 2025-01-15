@@ -1,16 +1,13 @@
 /*
  * @Description: 请求
  * @Version: 1.0
- * @Autor: jiajun wu
- * @Date: 2021-11-24 09:32:56
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-09-18 18:06:55
  */
 import { useCancelTokenStore } from "@/store/cancelToken";
 import axios, { AxiosRequestConfig as Config, AxiosResponse, Canceler } from "axios";
 import config from '@/config/defaultSettings'
 import Cookies from "js-cookie";
 import router from "@/router";
+import { goToLogin } from "./utils";
 
 export interface AxiosRequestConfig extends Config {
   /** 是否允许接口并行请求 */
@@ -25,12 +22,13 @@ const service = axios.create({
 const err = (error: { request: AxiosRequestConfig, response: AxiosResponse }) => {
   if (error.response?.status === 401) {
     Cookies.remove('token');
-    router.push({
-      path: '/login',
-      query: {
-        redirect: router.currentRoute.value.fullPath
-      }
-    })
+    goToLogin("?redirect=" + router.currentRoute.value.fullPath)
+    // router.push({
+    //   path: '/login',
+    //   query: {
+    //     redirect: router.currentRoute.value.fullPath
+    //   }
+    // })
   }
   return Promise.reject(error)
 }

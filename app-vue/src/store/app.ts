@@ -1,4 +1,4 @@
-import { isAuthed, login as loginApi, logout as logoutApi } from '@/api/system-service'
+import { isAuthed, logout as logoutApi } from '@/api/system-service'
 import { getQueryVariable, setToken as uSetToken, getToken as uGetToken } from '@/utils/utils'
 import { notification } from 'ant-design-vue'
 import { defineStore } from 'pinia'
@@ -52,37 +52,6 @@ export const useAppStore = defineStore('app', () => {
     })
   }
 
-  const login = (data: any) => {
-    return new Promise((resolve, reject) => {
-      var urlencoded = new URLSearchParams();
-      urlencoded.append("phone", data.phone);
-      urlencoded.append("password", data.password);
-
-      loginApi(urlencoded)
-        .then(res => {
-          if (res.success) {
-            userInfo.value = res.data
-            setToken(res.token)
-            resolve(res)
-          } else {
-            notification.error({
-              message: "登录失败",
-              description: res.msg,
-            });
-            userInfo.value = undefined
-            setToken('')
-            reject()
-          }
-        }).catch((err) => {
-          notification.error({
-            message: "登录失败",
-            description: err?.response?.data?.msg ?? err?.msg,
-          });
-          reject()
-        })
-    })
-  }
-
   const logout = () => {
     return new Promise((resolve) => {
       const fn = () => {
@@ -102,7 +71,6 @@ export const useAppStore = defineStore('app', () => {
     isAuth,
     setToken,
     getToken,
-    login,
     logout
   }
 })

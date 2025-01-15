@@ -18,16 +18,23 @@ Including another URLconf
 # from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls import handler400, handler403, handler404, handler500
-from .views import custom_404_view, custom_500_view, custom_400_view, custom_403_view
+from .views import (
+    custom_404_view,
+    custom_500_view,
+    custom_400_view,
+    custom_403_view,
+    is_start,
+)
 
 # api 版本
 # version = "v1"
-prefix = "api/"
+prefix = "config/api/"
 
 urlpatterns = [
     path(f"{prefix}login/", include("login.urls")),
     path(f"{prefix}sys/", include("system.urls")),
-    path(f"{prefix}config/", include("config.urls")),
+    path(f"{prefix}", include("config.urls")),
+    path(f"{prefix}isStart", is_start),
 ]
 
 handler400 = custom_400_view

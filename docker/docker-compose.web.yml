@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  ioa_web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    ports:
+      - "8889:80"
+    restart: always
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

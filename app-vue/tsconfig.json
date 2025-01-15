@@ -39,6 +39,5 @@
     "src/**/*.vue",
     "types/**/*.d.ts",
     "types/**/*.ts",
-    "electron/**/*.ts",
   ],
 }

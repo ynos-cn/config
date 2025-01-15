@@ -1,11 +1,3 @@
-/*
- * @Description: 
- * @Version: 1.0
- * @Autor: jiajun.wu
- * @Date: 2022-08-26 14:10:28
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-01-04 16:57:54
- */
 import type { ExtractPropTypes, PropType } from 'vue';
 import type { VueTypeValidableDef, VueTypeDef } from 'vue-types';
 

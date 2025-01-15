@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 from utlis.utils import json_response
 
 
@@ -26,3 +26,7 @@ def custom_500_view(request):
     return JsonResponse(
         json_response(code=500, msg="系统出错了", success=False), status=500
     )
+
+# 验证token
+def is_start(request: HttpRequest):
+    return JsonResponse({"code": 200, "msg": "服务运行中"}, status=200)

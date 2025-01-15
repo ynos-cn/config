@@ -1,10 +1,6 @@
 /*
  * @Description: 管理页面业务
  * @Version: 1.0
- * @Autor: jiajun.wu
- * @Date: 2023-03-31 10:35:11
- * @LastEditors: jiajun.wu
- * @LastEditTime: 2023-04-12 17:09:46
  */
 import { Ref, ref } from 'vue'
 import dayjs from 'dayjs';
