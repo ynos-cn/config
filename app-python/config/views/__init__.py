@@ -1,1 +1,1 @@
-from .projcet import *
+from .project import *

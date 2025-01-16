@@ -5,6 +5,8 @@ import { BaseStruct } from "./base"
 export interface UserStruct extends BaseStruct {
     /** 名称 */
     name: string
+    /** 名称 */
+    username: string
     /** 手机号码 */
     phone: string
     /** 职位 */

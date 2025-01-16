@@ -6,6 +6,7 @@ from utlis.base_models import BaseModel, BaseModelSerializer
 
 # 项目表
 class Project(BaseModel):
+    id = models.AutoField(primary_key=True, editable=False, max_length=64)
     app_name = models.CharField(verbose_name="项目名称", max_length=255)
     app_id = models.CharField(verbose_name="AppID", unique=True, max_length=255)
     project_managers = models.CharField(verbose_name="项目管理员", max_length=500)
@@ -26,6 +27,10 @@ class Project(BaseModel):
 class ProjectSerializer(BaseModelSerializer):
     projectManagers = serializers.CharField(source="project_managers", read_only=True)
     orgName = serializers.CharField(source="org_name", read_only=True)
+    appName = serializers.CharField(source="app_name", read_only=True)
+    appId = serializers.CharField(source="app_id", read_only=True)
+    pullSwitch = serializers.CharField(source="pull_switch", read_only=True)
+    envSwitch = serializers.CharField(source="env_switch", read_only=True)
 
     class Meta:
         model = Project
@@ -35,4 +40,8 @@ class ProjectSerializer(BaseModelSerializer):
         representation = super().to_representation(instance)
         representation["projectManagers"] = representation.pop("project_managers")
         representation["orgName"] = representation.pop("org_name")
+        representation["appName"] = representation.pop("app_name")
+        representation["appId"] = representation.pop("app_id")
+        representation["pullSwitch"] = representation.pop("pull_switch")
+        representation["envSwitch"] = representation.pop("env_switch")
         return representation

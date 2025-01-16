@@ -31,8 +31,6 @@ from .views import (
 prefix = "config/api/"
 
 urlpatterns = [
-    path(f"{prefix}login/", include("login.urls")),
-    path(f"{prefix}sys/", include("system.urls")),
     path(f"{prefix}", include("config.urls")),
     path(f"{prefix}isStart", is_start),
 ]

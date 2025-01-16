@@ -29,7 +29,7 @@ const ZSelect = defineComponent({
     /** 需要绑定的 键  */
     bingValue: {
       type: String,
-      default: '_id'
+      default: 'id'
     },
     /** 查询大小 */
     findPageSize: {
@@ -39,7 +39,7 @@ const ZSelect = defineComponent({
     /** 数据相应的路径 */
     dataPath: {
       type: String,
-      default: 'body'
+      default: 'data'
     },
     /** 条件查询 */
     paramBodyData: {

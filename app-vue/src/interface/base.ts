@@ -47,15 +47,15 @@ export interface ResDataStruct<T = any> {
  */
 export interface BaseStruct {
   /** 唯一id */
-  id?: string
+  id?: string | number
   /** 创建人 */
-  createById?: string
+  creator?: string
   /** 创建时间 */
   createTime?: string
   /** 更新时间 */
   updateTime?: string
   /** 更新人 */
-  updateById?: string
+  updater?: string
   /** 所属机构id */
   orgId?: string
 }

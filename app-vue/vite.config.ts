@@ -87,6 +87,11 @@ export default defineConfig(({ mode }) => {
           // rewrite: path => path.replace(/^\/localApi/, ''),
           changeOrigin: true
         },
+        "/config/api": {
+          target: `http://localhost:8891`,
+          // rewrite: path => path.replace(/^\/localApi/, ''),
+          changeOrigin: true
+        },
       }
     }
   }

@@ -3,58 +3,91 @@
   <div class="projcet">
     <div class="projcet-title">
       <span class="title-label">我的项目</span>
+      <a-input-search v-model:value="keywords" placeholder="按项目吗、负责人、描述和项目ID查找"
+        style="width: 200px;  margin-left: 20px;" @search="onSearch" />
     </div>
     <div class="app-container">
-      <div class="card add-card">
-        <div class="card-content" @click="onAddAPP">
-          <div class="container">
-            <div class="inner">
-              <PlusOutlined style="font-size: 16px;" />
-              <p style="margin-top: 5px;">新建项目</p>
+      <a-spin :spinning="loading">
+        <div class="card add-card">
+          <div class="card-content" @click="onAddAPP">
+            <div class="container">
+              <div class="inner">
+                <PlusOutlined style="font-size: 16px;" />
+                <p style="margin-top: 5px;">新建项目</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-content">
-          <div class="container">
-            <div class="title">
-              <span class="title-icon">D</span>
-              <span class="title-name">Demo项目1</span>
+        <div class="card" v-for="item in listData" :key="item.id">
+          <div class="card-content">
+            <div class="container">
+              <div class="title">
+                <span class="title-icon">{{ item.appName[0] }}</span>
+                <span class="title-name" :title="item.appName">{{ item.appName }}</span>
+              </div>
+              <div class="project_managers" :title="(item.projectManagers as string)">
+                {{ item.projectManagers }}
+              </div>
+              <div class="department" :title="item.orgName"> {{ item.orgName }} </div>
+              <div class="description" :title="item.description"> {{ item.description }} </div>
             </div>
-            <div class="project_managers">
-              管理员
-            </div>
-            <div class="department"> 部门 </div>
-            <div class="description"> 描述 </div>
           </div>
         </div>
-      </div>
+      </a-spin>
     </div>
   </div>
 
-  <Modal v-model:open="visabled" title="创建项目" :mask="false" @ok="handleOk">
+  <Modal v-model:open="visible" title="创建项目" :mask="false" @ok="handleOk">
     <Modify ref="modifyRef" />
   </Modal>
 </template>
 
 <script lang="ts" setup>
 import { PlusOutlined } from '@ant-design/icons-vue';
-import { Modal } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import { ref } from 'vue';
 import Modify from './modify.vue';
+import { apiFind } from '@/api/project-service'
+import { BaseParams } from '@/interface/base';
+import { ProjectStruct } from '@/interface/Project';
+import { useManage } from '@/hooks/useManage';
 
-const visabled = ref(false)
+const { onSearch, pagination, total, visible } = useManage(doQuery)
+
+const listData = ref<Array<ProjectStruct>>([])
+const loading = ref(false)
+const keywords = ref('')
 
 const onAddAPP = () => {
-  visabled.value = true
+  visible.value = true
 }
 const modifyRef = ref()
 const handleOk = (e: MouseEvent) => {
-  console.dir(modifyRef.value, 'modifyRef.value==');
-
   modifyRef.value.onFinish()
 };
+
+function doQuery() {
+  let body: BaseParams<ProjectStruct | any> = {
+    body: {
+      keywords: keywords.value
+    },
+    page: pagination.value.current,
+    limit: -1,
+  }
+  loading.value = true
+  apiFind(body).then(res => {
+    if (res.success) {
+      listData.value = res.data
+      total.value = res.total
+    } else {
+      message.error(res.msg)
+    }
+  }).finally(() => {
+    loading.value = false
+  })
+}
+doQuery()
+
 </script>
 <style lang='less' scoped>
 .projcet {
@@ -155,12 +188,14 @@ const handleOk = (e: MouseEvent) => {
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
+            margin-bottom: 5px;
           }
 
           .description {
             padding: 10px 0;
             box-sizing: border-box;
             word-break: keep-all;
+            margin-bottom: 0;
           }
 
         }

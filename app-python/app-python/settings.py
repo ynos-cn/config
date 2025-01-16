@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     # "django.contrib.staticfiles",
     "rest_framework",
-    "login",
     "system",
     "config",
 ]
@@ -107,7 +106,7 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://sk.yn59.cn:16379/4",
+        "LOCATION": "redis://sk.yn59.cn:16379/2",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
@@ -117,7 +116,7 @@ CACHES = {
     },
     "business": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://sk.yn59.cn:16379/5",
+        "LOCATION": "redis://sk.yn59.cn:16379/4",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
