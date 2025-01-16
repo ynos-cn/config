@@ -31,7 +31,7 @@ def create(request: HttpRequest):
     app_name = body.get("appName")
     project_managers = body.get("projectManagers")
     org_id = request.user.get("orgId")
-    org_name = request.user.get("orgName")
+    org_name = body.get("orgName")
 
     if not app_name:
         return JsonResponse(

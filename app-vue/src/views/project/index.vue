@@ -37,8 +37,8 @@
     </div>
   </div>
 
-  <Modal v-model:open="visible" title="创建项目" :mask="false" @ok="handleOk">
-    <Modify ref="modifyRef" />
+  <Modal v-model:open="visible" title="创建项目" :width="600" :mask="false" @ok="handleOk">
+    <Modify ref="modifyRef" @close="goBack" />
   </Modal>
 </template>
 
@@ -52,7 +52,7 @@ import { BaseParams } from '@/interface/base';
 import { ProjectStruct } from '@/interface/Project';
 import { useManage } from '@/hooks/useManage';
 
-const { onSearch, pagination, total, visible } = useManage(doQuery)
+const { onSearch, pagination, total, visible, goBack } = useManage(doQuery)
 
 const listData = ref<Array<ProjectStruct>>([])
 const loading = ref(false)
