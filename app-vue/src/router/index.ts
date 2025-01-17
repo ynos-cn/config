@@ -7,13 +7,27 @@ const routers: Array<RouteRecordRaw> = [
     name: 'index',
     component: BasicLayout,
     meta: { title: '配置中心' },
-    redirect: '/home',
+    redirect: '/console',
     children: [
       {
-        path: '/home',
-        name: 'home',
+        path: '/console',
+        name: 'console',
         component: () => import('@/views/project/index.vue'),
         meta: { title: '配置中心' }
+      },
+      {
+        path: '/:id',
+        name: 'config',
+        component: () => import('@/views/config/index.vue'),
+        meta: { title: '配置中心' },
+        children: [
+          {
+            path: '/:id/list',
+            name: 'list',
+            component: () => import('@/views/config/list/index.vue'),
+            meta: { title: '配置中心' }
+          },
+        ]
       },
     ],
   },

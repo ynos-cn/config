@@ -18,7 +18,7 @@
             </div>
           </div>
         </div>
-        <div class="card" v-for="item in listData" :key="item.id">
+        <div class="card" v-for="item in listData" :key="item.id" @click="onGoConfig(item)">
           <div class="card-content">
             <div class="container">
               <div class="title">
@@ -51,7 +51,9 @@ import { apiFind } from '@/api/project-service'
 import { BaseParams } from '@/interface/base';
 import { ProjectStruct } from '@/interface/Project';
 import { useManage } from '@/hooks/useManage';
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const { onSearch, pagination, total, visible, goBack } = useManage(doQuery)
 
 const listData = ref<Array<ProjectStruct>>([])
@@ -87,6 +89,13 @@ function doQuery() {
   })
 }
 doQuery()
+
+const onGoConfig = (record: ProjectStruct) => {
+  console.log(record, '==');
+  router.push({
+    path: `${record.appId}/list`,
+  })
+}
 
 </script>
 <style lang='less' scoped>

@@ -8,13 +8,25 @@ import classes from './index.module.less'
 import { ExclamationCircleOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { useAppStore } from '@/store/app'
 import { Modal } from 'ant-design-vue'
+import { useRouter } from 'vue-router'
+
 
 const globalHeader = defineComponent({
   name: 'GlobalHeader',
   setup(_props) {
+    const router = useRouter()
+
+    const goHome = () => {
+      router.push({
+        path: '/'
+      })
+    }
+
     const headerIcon = () => {
       return (
-        h('div', { class: classes.logo }, [])
+        h('div', { class: classes.logo }, [
+          h('span', { class: classes.logoText, onclick: goHome }, ['配置中心'])
+        ])
       )
     }
 
