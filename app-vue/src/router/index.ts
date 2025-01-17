@@ -22,10 +22,22 @@ const routers: Array<RouteRecordRaw> = [
         meta: { title: '配置中心' },
         children: [
           {
+            path: '/:id/base',
+            name: 'base',
+            component: () => import('@/views/config/base/index.vue'),
+            meta: { title: '信息' }
+          },
+          {
             path: '/:id/list',
             name: 'list',
             component: () => import('@/views/config/list/index.vue'),
             meta: { title: '配置中心' }
+          },
+          {
+            path: '/:id/task',
+            name: 'task',
+            component: () => import('@/views/config/task/index.vue'),
+            meta: { title: '任务' }
           },
         ]
       },

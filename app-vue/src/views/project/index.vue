@@ -91,9 +91,8 @@ function doQuery() {
 doQuery()
 
 const onGoConfig = (record: ProjectStruct) => {
-  console.log(record, '==');
   router.push({
-    path: `${record.appId}/list`,
+    path: `/${record.appId}/list`,
   })
 }
 
