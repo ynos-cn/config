@@ -1,0 +1,3 @@
+[submodule "app-python/utils"]
+	path = app-python/utils
+	url = git@github.com:ynos-cn/python-utils.git
