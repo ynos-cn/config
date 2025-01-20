@@ -12,92 +12,75 @@ from utlis.utils import (
     json_response,
     new_call_id,
 )
-from ..models.project import Project, ProjectSerializer
 from ..models.env_info import EnvInfo, EnvInfoSerializer
 from rest_framework.parsers import JSONParser
 from utlis.decorators import GET, POST, auth_user, DELETE
 from utlis.log import logger
 from django.db.models import Q
-from django.db import transaction
-from utlis.enum_type import EnvironmentType
 
 
 @POST("create")
 @auth_user()
 def create(request: HttpRequest):
     print(f"\n")
-    logger.info("============= 进入 创建项目 =============")
+    logger.info("============= 进入 创建环境 =============")
     logger.info(f"操作人: {request.user}")
 
     body = JSONParser().parse(request)
     logger.info(f"body: {body}")
-    app_name = body.get("appName")
-    project_managers = body.get("projectManagers")
-    org_id = request.user.get("orgId")
-    org_name = body.get("orgName")
+    env_type = body.get("envType")
+    env_name = body.get("envName")
+    app_id = body.get("appId")
 
-    if not app_name:
+    if not env_type:
         return JsonResponse(
-            json_response(code=400, msg="项目名称不能为空", success=False), status=400
+            json_response(code=400, msg="环境类型不能为空", success=False), status=400
         )
-    if not project_managers:
+    if not env_name:
         return JsonResponse(
-            json_response(code=400, msg="负责人不能为空", success=False), status=400
+            json_response(code=400, msg="环境名称不能为空", success=False), status=400
+        )
+    if not app_id:
+        return JsonResponse(
+            json_response(code=400, msg="项目ID不能为空", success=False), status=400
         )
 
     try:
-        with transaction.atomic():
-            # 检查项目名称是否已存在
-            if (
-                Project.objects.using("default")
-                .filter(app_name=app_name, org_id=org_id)
-                .exclude(is_delete=1)
-                .exists()
-            ):
-                return JsonResponse(
-                    json_response(
-                        code=400, msg=f"{app_name} 项目名称已存在", success=False
-                    ),
-                    status=400,
-                )
+        query_data = Q()
+        query_data &= Q(app_id=app_id)
+        query_data &= Q(env_name=env_name)
+        record = EnvInfo.objects.using("default").filter(query_data).first()
 
-            user_name = request.user.get("username")
-            app_id = new_call_id("-")
-            data = {
-                "app_name": app_name,
-                "app_id": app_id,
-                "project_managers": project_managers,
-                "description": body.get("description", ""),
-                "pull_switch": body.get("pullSwitch", 0),
-                "env_switch": body.get("envSwitch", 0),
-                "creator": user_name,
-                "updater": user_name,
-                "org_id": org_id,
-                "org_name": org_name,
-            }
-
-            project = Project.objects.using("default").create(**data)
-            serializer = ProjectSerializer(project)
-
-            # 创建默认环境
-            env_data = {
-                "app_id": project.app_id,
-                "env_type": EnvironmentType.PRODUCTION,
-                "env_name": "Default",
-                "env_desc": "",
-            }
-            env_info = EnvInfo.objects.using("default").create(**env_data)
-            serializer_env = EnvInfoSerializer(env_info)
-
-            logger.info(f"创建默认环境成功,项目ID: {app_id}, 环境ID: {env_info.id}")
-
-        # 成功响应
-        return JsonResponse(
-            json_response(
-                msg=f"{app_name} 项目创建成功", data=serializer.data, success=True
+        if record:
+            return JsonResponse(
+                json_response(
+                    code=400,
+                    msg=f"{env_name} 环境名称已存在",
+                    data=record.id,
+                    success=False,
+                ),
+                status=400,
             )
+
+        data = {
+            "env_type": env_type,
+            "app_id": app_id,
+            "env_name": env_name,
+            "env_desc": body.get("envDesc", ""),
+        }
+
+        serializer = EnvInfoSerializer(
+            EnvInfo.objects.using("default").create(**data), many=False
         )
 
+        return JsonResponse(
+            json_response(
+                msg=f"{serializer.data.get('envName')} 环境创建成功",
+                data=serializer.data,
+                success=True,
+            ),
+            safe=False,
+        )
     except Exception as e:
         logger.error(f"创建失败: {e}")
         return JsonResponse(
