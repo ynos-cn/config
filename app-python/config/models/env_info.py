@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 # 环境表
 class EnvInfo(models.Model):
     id = models.AutoField(primary_key=True, editable=False, max_length=64)
+
     env_type = models.CharField(
         max_length=20,
         choices=[(env.value, env.name) for env in EnvironmentType],

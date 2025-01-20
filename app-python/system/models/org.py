@@ -6,7 +6,6 @@ from utlis.base_models import BaseModel, BaseModelSerializer
 
 # 企业/机构
 class Org(BaseModel):
-    id = models.CharField(primary_key=True, editable=False, max_length=32)
     name = models.CharField(verbose_name="名称", max_length=255)
     code = models.CharField(verbose_name="代码", unique=True, max_length=255)
     controller_name = models.CharField(verbose_name="负责人姓名", max_length=255)

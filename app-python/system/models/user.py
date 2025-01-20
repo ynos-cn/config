@@ -8,7 +8,6 @@ from utlis.utils import format_datetime
 
 # 用户表
 class User(BaseModel):
-    id = models.CharField(primary_key=True, editable=False, max_length=32)
     phone = models.CharField(verbose_name="手机号", max_length=32)
     password = models.CharField(verbose_name="密码", max_length=64)
     name = models.CharField(verbose_name="姓名", max_length=32)

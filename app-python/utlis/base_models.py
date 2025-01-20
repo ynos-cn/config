@@ -14,7 +14,7 @@ def format_datetime(dt, fmt="%Y-%m-%d %H:%M:%S"):
 
 # 基础字段
 class BaseModel(models.Model):
-    id = models.CharField(primary_key=True, editable=False, max_length=64)
+    id = models.AutoField(primary_key=True, editable=False, max_length=64)
 
     create_time = models.DateTimeField(verbose_name="创建时间", auto_now_add=True)
     update_time = models.DateTimeField(verbose_name="更新时间", auto_now_add=True)

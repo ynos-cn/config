@@ -87,8 +87,7 @@ def create(request: HttpRequest):
                 "env_desc": "",
             }
             env_info = EnvInfo.objects.using("default").create(**env_data)
-            serializer_env = EnvInfoSerializer(env_info)
-
+            
             logger.info(f"创建默认环境成功,项目ID: {app_id}, 环境ID: {env_info.id}")
 
         # 成功响应
