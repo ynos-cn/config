@@ -6,6 +6,18 @@
 
 [![](https://img.shields.io/badge/release-v2.0.0-blue.svg)](https://git.code.oa.com/nmpc/vue-template-ele) [![](https://img.shields.io/appveyor/ci/gruntjs/grunt.svg)](https://git.code.oa.com/nmpc/vue-template-ele) [![vue](https://img.shields.io/badge/vue-v3.2.27-brightgreen.svg)](https://cn.vuejs.org/v2/guide/) [![pinia](https://img.shields.io/badge/pinia-v2.2.2-brightgreen.svg)](https://vuex.vuejs.org/zh/) [![vue-router](https://img.shields.io/badge/vue--router-v4.0.14-brightgreen.svg)](https://router.vuejs.org/zh/) [![antdv](https://img.shields.io/badge/antdv-v4.2.1-brightgreen.svg)](https://www.antdv.com/components/overview-cn)
 
+### 引入子模块
+```shell
+git submodule add git@github.com:ynos-cn/python-utils.git app-python/utils
+```
+```shell
+git submodule init
+```
+```shell
+git submodule update 
+```
+
+
 ### 目录说明
 
 ```

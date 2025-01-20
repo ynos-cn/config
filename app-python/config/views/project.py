@@ -1,13 +1,13 @@
 from django.http import HttpRequest, JsonResponse
 from django.core.paginator import Paginator
-from utlis.base_delete import delete_model_instances
-from utlis.base_query import (
+from utils.base_delete import delete_model_instances
+from utils.base_query import (
     delete_user_organizations,
     get_filter,
     get_user_organizations,
     getBaseParams,
 )
-from utlis.utils import (
+from utils.utils import (
     format_datetime,
     json_response,
     new_call_id,
@@ -15,11 +15,11 @@ from utlis.utils import (
 from ..models.project import Project, ProjectSerializer
 from ..models.env_info import EnvInfo, EnvInfoSerializer
 from rest_framework.parsers import JSONParser
-from utlis.decorators import GET, POST, auth_user, DELETE
-from utlis.log import logger
+from utils.decorators import GET, POST, auth_user, DELETE
+from utils.log import logger
 from django.db.models import Q
 from django.db import transaction
-from utlis.enum_type import EnvironmentType
+from ..utils import EnvironmentType
 
 
 @POST("create")

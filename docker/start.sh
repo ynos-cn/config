@@ -17,15 +17,23 @@ function echo_info() { echo -e "${GREEN}[INFO] $1${RESET}"; }
 function echo_warning() { echo -e "${YELLOW}[WARNING] $1${RESET}"; }
 function echo_error() { echo -e "${RED}[ERROR] $1${RESET}"; }
 
+# 更新子模块内容
+function update_submodules() {
+    echo_info "更新子模块内容..."
+    git submodule update --init --recursive
+}
+
 # 构建前端镜像
 function build_frontend() {
     echo_info "开始构建前端镜像..."
+    update_submodules
     docker-compose -f $FRONTEND_COMPOSE build $FRONTEND_NAME
 }
 
 # 构建后端镜像
 function build_backend() {
     echo_info "开始构建后端镜像..."
+    update_submodules
     docker-compose -f $BACKEND_COMPOSE build $BACKEND_NAME
 }
 

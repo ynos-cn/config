@@ -1,13 +1,13 @@
-from utlis.utils import format_datetime
+from utils.utils import format_datetime
 from django.db import models
 from rest_framework import serializers
-from utlis.enum_type import EnvironmentType
+from ..utils import EnvironmentType
 from datetime import datetime, timezone
 
 
 # 环境表
 class EnvInfo(models.Model):
-    id = models.AutoField(primary_key=True, editable=False, max_length=64)
+    id = models.AutoField(primary_key=True, editable=False)
 
     env_type = models.CharField(
         max_length=20,

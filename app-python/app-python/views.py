@@ -1,5 +1,5 @@
 from django.http import HttpRequest, JsonResponse
-from utlis.utils import json_response
+from utils.utils import json_response
 
 
 def custom_400_view(request, exception):

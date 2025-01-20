@@ -1,12 +1,12 @@
 from django.db import models
 from rest_framework import serializers
 
-from utlis.base_models import BaseModel, BaseModelSerializer
+from utils.base_models import BaseModel, BaseModelSerializer
 
 
 # 项目表
 class Project(BaseModel):
-    id = models.AutoField(primary_key=True, editable=False, max_length=64)
+    id = models.AutoField(primary_key=True, editable=False)
     app_name = models.CharField(verbose_name="项目名称", max_length=255)
     app_id = models.CharField(verbose_name="AppID", unique=True, max_length=255)
     project_managers = models.CharField(verbose_name="项目管理员", max_length=500)
