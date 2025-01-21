@@ -12,8 +12,7 @@ from utils.utils import (
     json_response,
     new_call_id,
 )
-from ..models.project import Project, ProjectSerializer
-from ..models.env_info import EnvInfo, EnvInfoSerializer
+from ..models import EnvInfo, CustomUser, Project, ProjectSerializer
 from rest_framework.parsers import JSONParser
 from utils.decorators import GET, POST, auth_user, DELETE
 from utils.log import logger
@@ -68,7 +67,7 @@ def create(request: HttpRequest):
                 "app_id": app_id,
                 "project_managers": project_managers,
                 "description": body.get("description", ""),
-                "pull_switch": body.get("pullSwitch", 0),
+                "pull_switch": body.get("pullSwitch", 1),
                 "env_switch": body.get("envSwitch", 0),
                 "creator": user_name,
                 "updater": user_name,
@@ -81,13 +80,24 @@ def create(request: HttpRequest):
 
             # 创建默认环境
             env_data = {
-                "app_id": project.app_id,
+                "app_id": app_id,
                 "env_type": EnvironmentType.PRODUCTION,
                 "env_name": "Default",
                 "env_desc": "",
             }
             env_info = EnvInfo.objects.using("default").create(**env_data)
-            
+
+            # 创建默认自定义用户
+            custom_user_data = {
+                "app_id": app_id,
+                "user_name": "Config_default",
+                "user_id": new_call_id(),
+                "secret_key": new_call_id(),
+                "enable_status": 1,
+            }
+            c_user = CustomUser.objects.using("default").create(**custom_user_data)
+            logger.info(f"创建默认自定义用户成功,项目ID: {app_id}, 用户ID: {c_user.id}")
+
             logger.info(f"创建默认环境成功,项目ID: {app_id}, 环境ID: {env_info.id}")
 
         # 成功响应
@@ -123,64 +133,70 @@ def update(request: HttpRequest):
             json_response(code=400, msg="id不能为空", success=False), status=400
         )
 
-    if not app_name:
-        return JsonResponse(
-            json_response(code=400, msg="项目名称不能为空", success=False), status=400
-        )
-    if not project_managers:
-        return JsonResponse(
-            json_response(code=400, msg="负责人不能为空", success=False), status=400
-        )
-
     try:
-        query_data = Q()
-        query_data &= Q(id=id)
-        record = Project.objects.using("default").filter(query_data).first()
-        if not record:
-            return JsonResponse(
-                json_response(code=400, msg="项目不存在", success=False), status=400
+        with transaction.atomic():
+            Project.objects.using("default").select_for_update().get(id=id)
+
+            # 检查项目名称是否已存在（如果提供了新名称）
+            if app_name:
+                if (
+                    Project.objects.using("default")
+                    .filter(app_name=app_name)
+                    .exclude(id=id)
+                    .exclude(org_id=org_id)
+                    .exclude(is_delete=1)
+                    .exists()
+                ):
+                    return JsonResponse(
+                        json_response(
+                            code=400, msg=f"{app_name} 项目名称已存在", success=False
+                        ),
+                        status=400,
+                    )
+
+            # 准备更新数据
+            update_data = {
+                "update_time": format_datetime(),  # 使用Django提供的timezone.now()
+                "updater": request.user.get("username"),
+            }
+            # 只更新提供的字段
+            update_fields = {
+                "app_name": "appName",
+                "project_managers": "projectManagers",
+                "description": "description",
+                "pull_switch": "pullSwitch",
+                "env_switch": "envSwitch",
+            }
+
+            for db_field, request_field in update_fields.items():
+                if request_field in body:
+                    update_data[db_field] = body[request_field]
+
+            # 执行更新
+            updated_rows = (
+                Project.objects.using("default").filter(id=id).update(**update_data)
             )
+            if updated_rows == 0:
+                return JsonResponse(
+                    json_response(code=400, msg="项目不存在或未修改", success=False),
+                    status=400,
+                )
 
-        query_data = Q()
-        query_data &= Q(app_name=app_name)
-        query_data &= Q(org_id=org_id)
-        query_data &= ~Q(id=id)
-        query_data &= ~Q(is_delete=1)
-        record = Project.objects.using("default").filter(query_data).first()
+            # 再次获取项目以获取更新后的数据（如果需要完整的数据）
+            project = Project.objects.using("default").get(id=id)
+            serializer = ProjectSerializer(project)
 
-        if record:
             return JsonResponse(
                 json_response(
-                    code=400,
-                    msg=f"{app_name} 项目名称已存在",
-                    data=record.id,
-                    success=False,
+                    msg=f"{project.app_name} 项目修改成功",
+                    data=serializer.data,
+                    success=True,
                 ),
-                status=400,
+                safe=False,
             )
-
-        user_name = request.user.get("username")
-        data = {
-            "update_time": format_datetime(),
-            "app_name": app_name,
-            "project_managers": project_managers,
-            "description": body.get("description", ""),
-            "pull_switch": body.get("pullSwitch", 0),
-            "env_switch": body.get("envSwitch", 0),
-            "updater": user_name,
-        }
-
-        Project.objects.using("default").filter(id=id).update(**data)
-        org = Project.objects.using("default").filter(id=id).first()
-        serializer = ProjectSerializer(org, many=False)
-
+    except Project.DoesNotExist:
         return JsonResponse(
-            json_response(
-                msg=f"{serializer.data.get('app_name')} 项目修改成功",
-                data=serializer.data,
-                success=True,
-            ),
-            safe=False,
+            json_response(code=400, msg="项目不存在", success=False), status=400
         )
     except Exception as e:
         logger.error(f"修改失败: {e}")
@@ -211,7 +227,7 @@ def get_id(request: HttpRequest, id: str):
         serializer = ProjectSerializer(record, many=False)
         return JsonResponse(
             json_response(
-                msg=f"{serializer.data.get('name')} 项目详情",
+                msg=f"{record.app_name} 项目详情",
                 data=serializer.data,
                 success=True,
             ),
@@ -240,7 +256,7 @@ def find(request: HttpRequest):
     try:
         # 查询用户 进行分页查询
         record = Project.objects.using("default").filter(query_data).order_by(*sorter)
-        total = Project.objects.using("default").filter(query_data).count()
+        total = record.count()
 
         if limit != -1:
             paginator = Paginator(record, limit)
@@ -274,7 +290,6 @@ def delete(request: HttpRequest):
                 Project,
                 ids,
                 db="default",
-                org_id=request.user.get("orgId"),
             )
             if length >= len(ids):
                 return JsonResponse(

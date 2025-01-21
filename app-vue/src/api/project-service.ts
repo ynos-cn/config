@@ -42,7 +42,7 @@ export function apiSave(data: ProjectStruct) {
  *  删除
  */
 export function apiDelete(data: Array<string>) {
-  return axios({
+  return axios<ResDataStruct<number>>({
     url: '/config/api/project/delete',
     method: "DELETE",
     data

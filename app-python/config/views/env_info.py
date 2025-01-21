@@ -212,25 +212,27 @@ def get_id(request: HttpRequest, id: str):
 @auth_user()
 def find(request: HttpRequest):
     print(f"\n")
-    logger.info("============= 进入 项目查询 =============")
+    logger.info("============= 进入 项目环境 =============")
     logger.info(f"操作人: {request.user}")
 
     # 获取查询参数
     query_data, sorter, limit, page = getBaseParams(
         request,
-        ["app_name", "app_id", "project_managers", "description"],
+        ["env_type", "env_name", "app_id", "env_desc"],
+        allowed_org_ids=False,
+        no_is_delete=True,
     )
 
     try:
         # 查询用户 进行分页查询
-        record = Project.objects.using("default").filter(query_data).order_by(*sorter)
-        total = Project.objects.using("default").filter(query_data).count()
+        record = EnvInfo.objects.using("default").filter(query_data).order_by(*sorter)
+        total = record.count()
 
         if limit != -1:
             paginator = Paginator(record, limit)
             record = paginator.get_page(page)
 
-        list_data = ProjectSerializer(record, many=True)
+        list_data = EnvInfoSerializer(record, many=True)
         # 返回数据
         return JsonResponse(
             json_response(msg="查询成功", data=list_data.data, total=total), safe=False
@@ -255,10 +257,11 @@ def delete(request: HttpRequest):
     if ids:
         try:
             length = delete_model_instances(
-                Project,
+                EnvInfo,
                 ids,
                 db="default",
                 org_id=request.user.get("orgId"),
+                soft_delete=False,
             )
             if length >= len(ids):
                 return JsonResponse(

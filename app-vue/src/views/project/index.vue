@@ -50,6 +50,7 @@ import Modify from './modify.vue';
 import { apiFind } from '@/api/project-service'
 import { BaseParams } from '@/interface/base';
 import { ProjectStruct } from '@/interface/Project';
+import { apiFind as envApiFind } from '@/api/env-service'
 import { useManage } from '@/hooks/useManage';
 import { useRouter } from 'vue-router'
 
@@ -91,8 +92,22 @@ function doQuery() {
 doQuery()
 
 const onGoConfig = (record: ProjectStruct) => {
-  router.push({
-    path: `/${record.appId}/list`,
+  if (!record.appId) {
+    return
+  }
+  let body: any = {
+    body: {
+      appId: record.appId
+    }
+  }
+  envApiFind(body).then(res => {
+    if (res.success && res.data.length > 0) {
+      router.push({
+        path: `/config/${record.appId}/${res.data[0].envName}/base`,
+      })
+    } else {
+      message.error(res.msg)
+    }
   })
 }
 

@@ -3,38 +3,42 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router"
 
 const routers: Array<RouteRecordRaw> = [
   {
-    path: '/',
+    path: "/",
+    redirect: "/config/console",
+  },
+  {
+    path: '/config',
     name: 'index',
     component: BasicLayout,
     meta: { title: '配置中心' },
-    redirect: '/console',
+    redirect: '/config/console',
     children: [
       {
-        path: '/console',
+        path: '/config/console',
         name: 'console',
         component: () => import('@/views/project/index.vue'),
         meta: { title: '配置中心' }
       },
       {
-        path: '/:id',
+        path: '/config/:id/:env',
         name: 'config',
         component: () => import('@/views/config/index.vue'),
         meta: { title: '配置中心' },
         children: [
           {
-            path: '/:id/base',
+            path: '/config/:id/:env/base',
             name: 'base',
             component: () => import('@/views/config/base/index.vue'),
             meta: { title: '信息' }
           },
           {
-            path: '/:id/list',
+            path: '/config/:id/:env/list',
             name: 'list',
             component: () => import('@/views/config/list/index.vue'),
             meta: { title: '配置中心' }
           },
           {
-            path: '/:id/task',
+            path: '/config/:id/:env/task',
             name: 'task',
             component: () => import('@/views/config/task/index.vue'),
             meta: { title: '任务' }
@@ -55,7 +59,7 @@ const routers: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('config'),
+  history: createWebHistory(),
   routes: routers as RouteRecordRaw[]
 })
 
