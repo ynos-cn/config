@@ -49,7 +49,7 @@ def create(request: HttpRequest):
         query_data = Q()
         query_data &= Q(app_id=app_id)
         query_data &= Q(env_name=env_name)
-        record = EnvInfo.objects.using("default").filter(query_data).first()
+        record = EnvInfo.objects.using("config_db").filter(query_data).first()
 
         if record:
             return JsonResponse(
@@ -70,7 +70,7 @@ def create(request: HttpRequest):
         }
 
         serializer = EnvInfoSerializer(
-            EnvInfo.objects.using("default").create(**data), many=False
+            EnvInfo.objects.using("config_db").create(**data), many=False
         )
 
         return JsonResponse(
@@ -119,7 +119,7 @@ def update(request: HttpRequest):
     try:
         query_data = Q()
         query_data &= Q(id=id)
-        record = Project.objects.using("default").filter(query_data).first()
+        record = Project.objects.using("config_db").filter(query_data).first()
         if not record:
             return JsonResponse(
                 json_response(code=400, msg="项目不存在", success=False), status=400
@@ -130,7 +130,7 @@ def update(request: HttpRequest):
         query_data &= Q(org_id=org_id)
         query_data &= ~Q(id=id)
         query_data &= ~Q(is_delete=1)
-        record = Project.objects.using("default").filter(query_data).first()
+        record = Project.objects.using("config_db").filter(query_data).first()
 
         if record:
             return JsonResponse(
@@ -154,8 +154,8 @@ def update(request: HttpRequest):
             "updater": user_name,
         }
 
-        Project.objects.using("default").filter(id=id).update(**data)
-        org = Project.objects.using("default").filter(id=id).first()
+        Project.objects.using("config_db").filter(id=id).update(**data)
+        org = Project.objects.using("config_db").filter(id=id).first()
         serializer = ProjectSerializer(org, many=False)
 
         return JsonResponse(
@@ -186,7 +186,7 @@ def get_id(request: HttpRequest, id: str):
         )
 
     try:
-        record = Project.objects.using("default").filter(id=id).first()
+        record = Project.objects.using("config_db").filter(id=id).first()
         if not record:
             return JsonResponse(
                 json_response(code=400, msg="项目不存在", success=False), status=400
@@ -225,7 +225,7 @@ def find(request: HttpRequest):
 
     try:
         # 查询用户 进行分页查询
-        record = EnvInfo.objects.using("default").filter(query_data).order_by(*sorter)
+        record = EnvInfo.objects.using("config_db").filter(query_data).order_by(*sorter)
         total = record.count()
 
         if limit != -1:
@@ -259,7 +259,7 @@ def delete(request: HttpRequest):
             length = delete_model_instances(
                 EnvInfo,
                 ids,
-                db="default",
+                db="config_db",
                 org_id=request.user.get("orgId"),
                 soft_delete=False,
             )

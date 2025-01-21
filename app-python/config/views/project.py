@@ -48,7 +48,7 @@ def create(request: HttpRequest):
         with transaction.atomic():
             # 检查项目名称是否已存在
             if (
-                Project.objects.using("default")
+                Project.objects.using("config_db")
                 .filter(app_name=app_name, org_id=org_id)
                 .exclude(is_delete=1)
                 .exists()
@@ -75,7 +75,7 @@ def create(request: HttpRequest):
                 "org_name": org_name,
             }
 
-            project = Project.objects.using("default").create(**data)
+            project = Project.objects.using("config_db").create(**data)
             serializer = ProjectSerializer(project)
 
             # 创建默认环境
@@ -85,7 +85,7 @@ def create(request: HttpRequest):
                 "env_name": "Default",
                 "env_desc": "",
             }
-            env_info = EnvInfo.objects.using("default").create(**env_data)
+            env_info = EnvInfo.objects.using("config_db").create(**env_data)
 
             # 创建默认自定义用户
             custom_user_data = {
@@ -95,7 +95,7 @@ def create(request: HttpRequest):
                 "secret_key": new_call_id(),
                 "enable_status": 1,
             }
-            c_user = CustomUser.objects.using("default").create(**custom_user_data)
+            c_user = CustomUser.objects.using("config_db").create(**custom_user_data)
             logger.info(f"创建默认自定义用户成功,项目ID: {app_id}, 用户ID: {c_user.id}")
 
             logger.info(f"创建默认环境成功,项目ID: {app_id}, 环境ID: {env_info.id}")
@@ -125,7 +125,6 @@ def update(request: HttpRequest):
     logger.info(f"body: {body}")
     id = body.get("id")
     app_name = body.get("appName")
-    project_managers = body.get("projectManagers")
     org_id = request.user.get("orgId")
 
     if not id:
@@ -135,12 +134,12 @@ def update(request: HttpRequest):
 
     try:
         with transaction.atomic():
-            Project.objects.using("default").select_for_update().get(id=id)
+            Project.objects.using("config_db").select_for_update().get(id=id)
 
             # 检查项目名称是否已存在（如果提供了新名称）
             if app_name:
                 if (
-                    Project.objects.using("default")
+                    Project.objects.using("config_db")
                     .filter(app_name=app_name)
                     .exclude(id=id)
                     .exclude(org_id=org_id)
@@ -174,7 +173,7 @@ def update(request: HttpRequest):
 
             # 执行更新
             updated_rows = (
-                Project.objects.using("default").filter(id=id).update(**update_data)
+                Project.objects.using("config_db").filter(id=id).update(**update_data)
             )
             if updated_rows == 0:
                 return JsonResponse(
@@ -183,7 +182,7 @@ def update(request: HttpRequest):
                 )
 
             # 再次获取项目以获取更新后的数据（如果需要完整的数据）
-            project = Project.objects.using("default").get(id=id)
+            project = Project.objects.using("config_db").get(id=id)
             serializer = ProjectSerializer(project)
 
             return JsonResponse(
@@ -218,7 +217,7 @@ def get_id(request: HttpRequest, id: str):
         )
 
     try:
-        record = Project.objects.using("default").filter(id=id).first()
+        record = Project.objects.using("config_db").filter(id=id).first()
         if not record:
             return JsonResponse(
                 json_response(code=400, msg="项目不存在", success=False), status=400
@@ -255,7 +254,7 @@ def find(request: HttpRequest):
 
     try:
         # 查询用户 进行分页查询
-        record = Project.objects.using("default").filter(query_data).order_by(*sorter)
+        record = Project.objects.using("config_db").filter(query_data).order_by(*sorter)
         total = record.count()
 
         if limit != -1:
@@ -289,7 +288,7 @@ def delete(request: HttpRequest):
             length = delete_model_instances(
                 Project,
                 ids,
-                db="default",
+                db="config_db",
             )
             if length >= len(ids):
                 return JsonResponse(

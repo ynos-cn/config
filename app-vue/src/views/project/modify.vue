@@ -3,7 +3,7 @@
   <a-form :model="formState" ref="formRef" name="basic" :label-col="{ style: { width: '100px' } }" autocomplete="off"
     @finish="onFinish">
     <a-form-item label="项目名" name="appName" :rules="[{ required: true, message: '请输入项目名' }]">
-      <a-input v-model:value="formState.appName" :maxlength="50" placeholder="请输入项目名" />
+      <a-input v-model:value="formState.appName" :maxlength="64" placeholder="请输入项目名" />
     </a-form-item>
     <a-form-item label="负责人" name="projectManagers" :rules="[{ required: true, message: '请输入负责人' }]">
       <ZSelect :showSearch="true" :find-url="'/ioa/api/sys/user/findName'" subtitleKey="name" searchKey="keywords"
@@ -14,8 +14,8 @@
     <a-form-item label="部门">
       {{ formState.orgName }}
     </a-form-item>
-    <a-form-item label="描述" name="description" :rules="[{ required: false, message: '请输入描述' }]">
-      <a-input v-model:value="formState.description" :maxlength="20" placeholder="请输入描述" />
+    <a-form-item label="描述" name="description" :rules="[{ required: false, message: '描述' }]">
+      <a-input v-model:value="formState.description" :maxlength="200" placeholder="描述" />
     </a-form-item>
   </a-form>
 </template>
