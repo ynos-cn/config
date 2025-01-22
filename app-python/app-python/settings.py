@@ -91,6 +91,7 @@ DATABASES = {
         "PASSWORD": "app123456.",
         "HOST": "sk.yn59.cn",
         "PORT": "13306",
+        "ATOMIC_REQUESTS": False,  # 确保这设置为 False，除非你确实需要
     },
     "config_db": {
         "ENGINE": "django.db.backends.mysql",
@@ -99,6 +100,7 @@ DATABASES = {
         "PASSWORD": "app123456.",
         "HOST": "sk.yn59.cn",
         "PORT": "13306",
+        "ATOMIC_REQUESTS": False,  # 确保这设置为 False，除非你确实需要
     },
 }
 

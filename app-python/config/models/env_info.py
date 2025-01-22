@@ -15,7 +15,7 @@ class EnvInfo(models.Model):
         verbose_name="环境类型",
     )
     env_name = models.CharField(verbose_name="自定义环境名称", max_length=32)
-    app_id = models.CharField(verbose_name="AppID", max_length=64)
+    app_id = models.CharField(verbose_name="AppID", max_length=64, db_index=True)
 
     env_desc = models.CharField(verbose_name="描述", max_length=256)
     create_time = models.DateTimeField(verbose_name="创建时间", auto_now_add=True)

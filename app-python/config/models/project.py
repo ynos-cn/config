@@ -8,7 +8,9 @@ from utils.base_models import BaseModel, BaseModelSerializer
 class Project(BaseModel):
     id = models.AutoField(primary_key=True, editable=False)
     app_name = models.CharField(verbose_name="项目名称", max_length=255)
-    app_id = models.CharField(verbose_name="AppID", unique=True, max_length=255)
+    app_id = models.CharField(
+        verbose_name="AppID", unique=True, max_length=255, db_index=True
+    )
     project_managers = models.CharField(verbose_name="项目管理员", max_length=500)
     org_name = models.CharField(verbose_name="所属机构名称", max_length=255)
     description = models.CharField(verbose_name="描述", max_length=500)

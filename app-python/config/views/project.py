@@ -4,6 +4,7 @@ from utils.base_delete import delete_model_instances
 from utils.base_query import (
     delete_user_organizations,
     get_filter,
+    get_sorter,
     get_user_organizations,
     getBaseParams,
 )
@@ -134,8 +135,6 @@ def update(request: HttpRequest):
 
     try:
         with transaction.atomic():
-            Project.objects.using("config_db").select_for_update().get(id=id)
-
             # 检查项目名称是否已存在（如果提供了新名称）
             if app_name:
                 if (
@@ -247,12 +246,49 @@ def find(request: HttpRequest):
     logger.info(f"操作人: {request.user}")
 
     # 获取查询参数
-    query_data, sorter, limit, page = getBaseParams(
-        request,
-        ["app_name", "app_id", "project_managers", "description"],
-    )
+    body = JSONParser().parse(request)
+    logger.info(f"获取到的参数: {body}")
+
+    # 处理分页参数
+    limit = body.get("limit", 10)
+    page = body.get("page", 1)
+
+    # 排序
+    sorter = get_sorter(body)
+
+    if body.get("body") != None:
+        logger.info(f"body = {body.get('body')}")
+        query_data = get_filter(
+            body.get("body"), ["app_name", "app_id", "project_managers", "description"]
+        )
+    else:
+        query_data = Q()
+    query_data &= ~Q(is_delete="1")
+
+    # 获取当前登录用户
+    current_user = request.user.get("username")
+    current_depart_id = request.user.get("orgId")
+
+    # 构建新的查询条件
+    # 1. creator 是当前登录人 或 project_managers 中包含当前登录人
+    # 添加 creator 条件
+    query_data &= Q(creator=current_user)
+    # 处理 project_managers 条件
+    # 使用正则表达式确保匹配整个单词
+    query_data |= Q(project_managers__iregex=r"\b" + current_user + r"\b")
+
+    # 2. 或者 role 表中 app_id 与项目 app_id 相等且 persons 中包含当前登录人；或者当前登录人的组织在 depart_ids 中
+    # 假设 Role 模型中有一个 'app_id' 和 'persons' 字段
+    # query_data |= Q(
+    #     id__in=Role.objects.filter(
+    #         app_id=OuterRef("id"), persons__contains=current_user
+    #     ).values("app_id")
+    # )
+    # query_data |= Q(depart_ids__contains=current_depart_id)
 
     try:
+        logger.info(f"查询条件 = {query_data}")
+
         # 查询用户 进行分页查询
         record = Project.objects.using("config_db").filter(query_data).order_by(*sorter)
         total = record.count()
