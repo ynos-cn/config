@@ -1,3 +1,12 @@
 [submodule "app-python/utils"]
 	path = app-python/utils
 	url = git@github.com:ynos-cn/python-utils.git
+[submodule "app-vue/src/hooks"]
+	path = app-vue/src/hooks
+	url = git@github.com:ynos-cn/vue-hooks.git
+[submodule "app-vue/src/components"]
+	path = app-vue/src/components
+	url = git@github.com:ynos-cn/vue-components.git
+[submodule "app-vue/src/utils"]
+	path = app-vue/src/utils
+	url = git@github.com:ynos-cn/vue-utils.git
