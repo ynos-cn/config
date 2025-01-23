@@ -18,42 +18,59 @@ from rest_framework.parsers import JSONParser
 from utils.decorators import GET, POST, auth_user, DELETE
 from utils.log import logger
 from django.db.models import Q
-from django.db import transaction
+from django.db import transaction, connection, DatabaseError, connections
 from ..utils import EnvironmentType
 
 
 @POST("create")
 @auth_user()
 def create(request: HttpRequest):
-    print(f"\n")
+    """
+    创建项目优化版（全SQL实现）
+    优化点：
+    1. 全面改用原生SQL提升性能
+    2. 增强事务管理
+    3. 防御性编程强化
+    4. 精细化错误处理
+    """
+    print("\n")
     logger.info("============= 进入 创建项目 =============")
     logger.info(f"操作人: {request.user}")
 
-    body = JSONParser().parse(request)
-    logger.info(f"body: {body}")
-    app_name = body.get("appName")
-    project_managers = body.get("projectManagers")
-    org_id = request.user.get("orgId")
-    org_name = body.get("orgName")
-
-    if not app_name:
-        return JsonResponse(
-            json_response(code=400, msg="项目名称不能为空", success=False), status=400
-        )
-    if not project_managers:
-        return JsonResponse(
-            json_response(code=400, msg="负责人不能为空", success=False), status=400
-        )
-
     try:
-        with transaction.atomic():
-            # 检查项目名称是否已存在
-            if (
-                Project.objects.using("config_db")
-                .filter(app_name=app_name, org_id=org_id)
-                .exclude(is_delete=1)
-                .exists()
-            ):
+        # ========================== 1. 参数解析与校验 ==========================
+        body = JSONParser().parse(request)
+        logger.info(f"请求参数: {body}")
+
+        # 必填字段校验
+        app_name = body.get("appName")
+        project_managers = body.get("projectManagers")
+        if not app_name:
+            return JsonResponse(
+                json_response(code=400, msg="项目名称不能为空", success=False),
+                status=400,
+            )
+        if not project_managers:
+            return JsonResponse(
+                json_response(code=400, msg="负责人不能为空", success=False), status=400
+            )
+
+        # 获取用户信息
+        org_id = request.user.get("orgId")
+        org_name = body.get("orgName", "")
+        user_name = request.user.get("username", "")
+
+        # ========================== 2. 项目名称唯一性校验 ==========================
+        with connections["config_db"].cursor() as cursor:
+            check_project_sql = f"""
+            SELECT COUNT(*) 
+            FROM {Project._meta.db_table} 
+            WHERE app_name = %s 
+              AND org_id = %s 
+              AND (is_delete IS NULL OR is_delete != 1)  -- 添加 is_delete 条件
+            """
+            cursor.execute(check_project_sql, [app_name, org_id])
+            if cursor.fetchone()[0] > 0:
                 return JsonResponse(
                     json_response(
                         code=400, msg=f"{app_name} 项目名称已存在", success=False
@@ -61,57 +78,116 @@ def create(request: HttpRequest):
                     status=400,
                 )
 
-            user_name = request.user.get("username")
-            app_id = new_call_id("-")
-            data = {
-                "app_name": app_name,
-                "app_id": app_id,
-                "project_managers": project_managers,
-                "description": body.get("description", ""),
-                "pull_switch": body.get("pullSwitch", 1),
-                "env_switch": body.get("envSwitch", 0),
-                "creator": user_name,
-                "updater": user_name,
-                "org_id": org_id,
-                "org_name": org_name,
-            }
+        # ========================== 3. 创建项目事务 ==========================
+        with transaction.atomic(using="config_db"):
+            with connections["config_db"].cursor() as cursor:
+                try:
+                    # ------------------- 3.1 生成项目ID -------------------
+                    app_id = new_call_id("-")
 
-            project = Project.objects.using("config_db").create(**data)
-            serializer = ProjectSerializer(project)
+                    # ------------------- 3.2 插入项目主数据 -------------------
+                    insert_project_sql = f"""
+                    INSERT INTO {Project._meta.db_table} 
+                    (app_name, app_id, project_managers, description, 
+                     pull_switch, env_switch, creator, updater, org_id, org_name, update_time)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(
+                        insert_project_sql,
+                        [
+                            app_name,
+                            app_id,
+                            project_managers,
+                            body.get("description", ""),
+                            body.get("pullSwitch", 1),
+                            body.get("envSwitch", 0),
+                            user_name,
+                            user_name,
+                            org_id,
+                            org_name,
+                            format_datetime(),
+                        ],
+                    )
+                    logger.info(f"创建项目成功 | 项目ID: {app_id}")
 
-            # 创建默认环境
-            env_data = {
-                "app_id": app_id,
-                "env_type": EnvironmentType.PRODUCTION,
-                "env_name": "Default",
-                "env_desc": "",
-            }
-            env_info = EnvInfo.objects.using("config_db").create(**env_data)
+                    # ------------------- 3.3 创建默认环境 -------------------
+                    insert_env_sql = f"""
+                    INSERT INTO {EnvInfo._meta.db_table} 
+                    (app_id, env_type, env_name, env_desc)
+                    VALUES (%s, %s, %s, %s)
+                    """
+                    cursor.execute(
+                        insert_env_sql,
+                        [app_id, EnvironmentType.PRODUCTION.value, "Default", ""],
+                    )
+                    env_id = cursor.lastrowid
+                    logger.info(f"创建默认环境成功 | 环境ID: {env_id}")
 
-            # 创建默认自定义用户
-            custom_user_data = {
-                "app_id": app_id,
-                "user_name": "Config_default",
-                "user_id": new_call_id(),
-                "secret_key": new_call_id(),
-                "enable_status": 1,
-            }
-            c_user = CustomUser.objects.using("config_db").create(**custom_user_data)
-            logger.info(f"创建默认自定义用户成功,项目ID: {app_id}, 用户ID: {c_user.id}")
+                    # ------------------- 3.4 创建默认用户 -------------------
+                    insert_user_sql = f"""
+                    INSERT INTO {CustomUser._meta.db_table} 
+                    (app_id, user_name, user_id, secret_key, enable_status)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """
+                    user_id = new_call_id()
+                    secret_key = new_call_id()
+                    cursor.execute(
+                        insert_user_sql,
+                        [app_id, "Config_default", user_id, secret_key, 1],
+                    )
+                    logger.info(f"创建默认用户成功 | 用户ID: {user_id}")
 
-            logger.info(f"创建默认环境成功,项目ID: {app_id}, 环境ID: {env_info.id}")
+                    # ================== 4. 查询并返回结果 ==================
+                    # 查询项目详情
+                    select_project_sql = f"""
+                    SELECT id, app_name, app_id, project_managers, description, pull_switch, env_switch, creator, updater, org_id, org_name, update_time
+                    FROM {Project._meta.db_table} 
+                    WHERE app_id = %s
+                    """
+                    cursor.execute(select_project_sql, [app_id])
+                    project_data = cursor.fetchone()
 
-        # 成功响应
+                    # 转换为字典格式
+                    project_dict = {
+                        "id": project_data[0],
+                        "appName": project_data[1],
+                        "appId": project_data[2],
+                        "projectManagers": project_data[3],
+                        "description": project_data[4],
+                        "pullSwitch": project_data[5],
+                        "envSwitch": project_data[6],
+                        "creator": project_data[7],
+                        "updater": project_data[8],
+                        "orgId": project_data[9],
+                        "orgName": project_data[10],
+                        "updateTime": project_data[11],
+                    }
+
+                    return JsonResponse(
+                        json_response(
+                            code=200,
+                            msg=f"{app_name} 项目创建成功",
+                            data=project_dict,
+                            success=True,
+                        )
+                    )
+
+                except DatabaseError as e:
+                    logger.error(f"数据库操作失败 | SQL: {cursor._last_executed}")
+                    raise
+                except Exception as e:
+                    logger.error(f"事务执行失败: {str(e)}")
+                    raise
+
+    except DatabaseError as db_err:
+        logger.error(f"数据库错误 | 类型: {type(db_err)} | 错误: {str(db_err)}")
         return JsonResponse(
-            json_response(
-                msg=f"{app_name} 项目创建成功", data=serializer.data, success=True
-            )
+            json_response(code=500, msg="数据库操作失败", success=False), status=500
         )
-
     except Exception as e:
-        logger.error(f"创建失败: {e}")
+        logger.error(f"系统异常 | 类型: {type(e)} | 错误: {str(e)}", exc_info=True)
         return JsonResponse(
-            json_response(code=500, msg="创建失败", success=False), status=500
+            json_response(code=500, msg="服务器内部错误", success=False), status=500
         )
 
 
