@@ -1,6 +1,6 @@
 import { BaseStruct } from "./base"
 
-/** 角色 */
+/** 项目 */
 export interface ProjectStruct extends BaseStruct {
     /** 名称 */
     appName: string

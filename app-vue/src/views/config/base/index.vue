@@ -78,6 +78,8 @@
         </a-descriptions-item>
       </a-descriptions>
     </a-card>
+
+    <RoleView />
   </a-spin>
 </template>
 
@@ -89,6 +91,7 @@ import { ProjectStruct } from '@/interface/Project';
 import { QuestionCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue';
 import { message, Modal } from 'ant-design-vue';
 import ZSelect from '@/components/z-select'
+import RoleView from './role.vue'
 
 const route = useRoute()
 const router = useRouter()

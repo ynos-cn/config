@@ -29,19 +29,19 @@ const routers: Array<RouteRecordRaw> = [
             path: '/config/:id/:env/base',
             name: 'base',
             component: () => import('@/views/config/base/index.vue'),
-            meta: { title: '信息' }
+            meta: { title: '信息' },
           },
           {
             path: '/config/:id/:env/list',
             name: 'list',
             component: () => import('@/views/config/list/index.vue'),
-            meta: { title: '配置中心' }
+            meta: { title: '配置中心' },
           },
           {
             path: '/config/:id/:env/task',
             name: 'task',
             component: () => import('@/views/config/task/index.vue'),
-            meta: { title: '任务' }
+            meta: { title: '任务' },
           },
         ]
       },
