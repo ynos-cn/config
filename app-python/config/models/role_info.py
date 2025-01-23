@@ -23,12 +23,13 @@ class RoleInfo(models.Model):
         verbose_name = "角色"
         verbose_name_plural = verbose_name
         ordering = ["-create_time"]  # 按照创建时间倒序排列
+        managed = False  # 告诉Django不要管理这个表
 
 
 class RoleInfoSerializer(serializers.ModelSerializer):
     appId = serializers.CharField(source="app_id", read_only=True)
-    permission_types = serializers.CharField(source="permissionTypes", read_only=True)
-    env_names = serializers.CharField(source="envNames", read_only=True)
+    permissionTypes = serializers.CharField(source="permission_types", read_only=True)
+    envNames = serializers.CharField(source="env_names", read_only=True)
     create_time = serializers.SerializerMethodField(default=timezone.utc)
 
     def get_create_time(self, obj):
@@ -60,6 +61,7 @@ class RoleRelation(models.Model):
         db_table = "tb_role_relation"  # 数据库表名
         verbose_name = "角色关系"
         verbose_name_plural = verbose_name
+        managed = False  # 告诉Django不要管理这个表
 
 
 class RoleRelationSerializer(serializers.ModelSerializer):
@@ -71,8 +73,7 @@ class RoleRelationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoleRelation
-        # fields = "__all__"
-        fields = ["appId", "userType", "roleId", "names", "orgId"]
+        fields = "__all__"
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
