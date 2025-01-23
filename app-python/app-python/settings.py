@@ -92,6 +92,8 @@ DATABASES = {
         "HOST": "sk.yn59.cn",
         "PORT": "13306",
         "ATOMIC_REQUESTS": False,  # 确保这设置为 False，除非你确实需要
+        "CONN_MAX_AGE": 300,  # 连接复用5分钟
+        "POOL_SIZE": 20,  # 连接池大小
     },
     "config_db": {
         "ENGINE": "django.db.backends.mysql",
@@ -101,6 +103,8 @@ DATABASES = {
         "HOST": "sk.yn59.cn",
         "PORT": "13306",
         "ATOMIC_REQUESTS": False,  # 确保这设置为 False，除非你确实需要
+        "CONN_MAX_AGE": 300,  # 连接复用5分钟
+        "POOL_SIZE": 20,  # 连接池大小
     },
 }
 
