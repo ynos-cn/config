@@ -1,4 +1,4 @@
-import { BasicLayout } from '@/components/layouts'
+import { BaseLayoutContent } from '@/layouts'
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router"
 
 const routers: Array<RouteRecordRaw> = [
@@ -9,7 +9,7 @@ const routers: Array<RouteRecordRaw> = [
   {
     path: '/config',
     name: 'index',
-    component: BasicLayout,
+    component: BaseLayoutContent,
     meta: { title: '配置中心' },
     redirect: '/config/console',
     children: [

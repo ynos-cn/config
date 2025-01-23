@@ -30,13 +30,21 @@
     <BaseTable :columns="columns" :dataSource="listData" :pagination="pagination" :loading="loading"
       @change="handleTableChange" bordered class="table-list">
       <template #bodyCell="{ column, record }">
-        <div v-if="column.dataIndex === 'operation'">
+        <div v-if="column.dataIndex == 'persons'">
+          <div v-for="item in record.persons">
+            {{ item.type == 1 ? 'OA用户' : "OA组织" }}：{{ item.names }}
+          </div>
+        </div>
+        <div v-if="column.dataIndex == 'permissionTypes'">
+          {{ getPermissionTypes(record.permissionTypes) }}
+        </div>
+        <!-- <div v-if="column.dataIndex === 'operation'">
           <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.edit)">编辑 </a-button>
           <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.details)">查看 </a-button>
           <a-popconfirm title="是否删除该数据?" ok-text="确认" cancel-text="取消" @confirm="toDelete(record)">
             <a-button class="options-btn" danger size="small">删除</a-button>
           </a-popconfirm>
-        </div>
+        </div> -->
       </template>
     </BaseTable>
   </a-card>
@@ -51,6 +59,7 @@ import { RoleStruct } from '@/interface/Role';
 import { useManage } from '@/hooks/useManage';
 import { BaseParams } from '@/interface/base';
 import { message } from 'ant-design-vue';
+import { PermissionType } from './setting'
 
 const listData = ref<Array<RoleStruct>>([])
 const loading = ref(false)
@@ -58,26 +67,31 @@ const columns = [
   {
     title: '角色名称',
     dataIndex: 'name',
+    align: "left",
   },
   {
     title: '人员列表',
     dataIndex: 'persons',
+    align: "left",
   },
   {
     title: '配置分组名',
     dataIndex: 'object',
+    align: "left",
   },
   {
     title: '权限类型',
     dataIndex: 'permissionTypes',
+    align: "left",
   },
   {
     title: '操作',
     dataIndex: 'operation',
+    align: "left",
   }
 ]
 
-const { onSearch, pagination, total, handleTableChange, searchData, visible, command, formData, goBack, router, route } = useManage(doQuery)
+const { pagination, total, handleTableChange, visible, command, formData, goBack, route } = useManage(doQuery)
 
 function doQuery() {
   if (!route.params?.id) {
@@ -88,7 +102,7 @@ function doQuery() {
       appId: route.params?.id
     },
     page: pagination.value.current,
-    limit: 10,
+    limit: pagination.value.pageSize,
     sorter: { "updateTime": 1, id: 1 }
   }
   loading.value = true
@@ -112,7 +126,25 @@ watch(() => route.params, (val) => {
 
 const onAddRole = () => {
   console.log(111);
+}
 
+const getPermissionTypes = (permissionTypes) => {
+  let strArr: Array<string> = []
+  let arr: Array<string> = []
+  if (typeof permissionTypes === 'string') {
+    arr = permissionTypes.split(';')
+  }
+  if (Array.isArray(permissionTypes)) {
+    arr = permissionTypes
+  }
+  arr.map(v => {
+    let label = PermissionType.find(item => item.name === v)?.label
+    if (label) {
+      strArr.push(label)
+    }
+  })
+
+  return strArr.join(';')
 }
 </script>
 <style lang='less' scoped>
