@@ -38,28 +38,32 @@
         <div v-if="column.dataIndex == 'permissionTypes'">
           {{ getPermissionTypes(record.permissionTypes) }}
         </div>
-        <!-- <div v-if="column.dataIndex === 'operation'">
-          <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.edit)">编辑 </a-button>
-          <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.details)">查看 </a-button>
+        <div v-if="column.dataIndex === 'operation'">
+          <!-- <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.edit)">编辑 </a-button> -->
           <a-popconfirm title="是否删除该数据?" ok-text="确认" cancel-text="取消" @confirm="toDelete(record)">
             <a-button class="options-btn" danger size="small">删除</a-button>
           </a-popconfirm>
-        </div> -->
+        </div>
       </template>
     </BaseTable>
   </a-card>
+
+  <Modal v-model:open="visible" title="创建项目" :width="888" :mask="false" @ok="handleOk">
+    <RoleModify ref="roleModifyRef" @close="goBack" />
+  </Modal>
 </template>
 
 <script lang="ts" setup>
 import { QuestionCircleOutlined } from '@ant-design/icons-vue';
 import { ref, watch } from 'vue';
-import { apiFind } from '@/api/role-service';
+import { apiFind, apiDelete } from '@/api/role-service';
 import BaseTable from '@/components/base-table';
 import { RoleStruct } from '@/interface/Role';
 import { useManage } from '@/hooks/useManage';
 import { BaseParams } from '@/interface/base';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import { PermissionType } from './setting'
+import RoleModify from './roleModify.vue'
 
 const listData = ref<Array<RoleStruct>>([])
 const loading = ref(false)
@@ -124,9 +128,15 @@ watch(() => route.params, (val) => {
   }
 }, { immediate: true, deep: true })
 
+/** =========== 新建角色 ====================== */
+const roleModifyRef = ref()
 const onAddRole = () => {
-  console.log(111);
+  visible.value = true
 }
+const handleOk = (e: MouseEvent) => {
+  roleModifyRef.value.onFinish()
+};
+/** =========== 新建角色 ====================== */
 
 const getPermissionTypes = (permissionTypes) => {
   let strArr: Array<string> = []
@@ -146,6 +156,38 @@ const getPermissionTypes = (permissionTypes) => {
 
   return strArr.join(';')
 }
+
+
+/** =========== 删除 ====================== */
+const toDelete = (listData: Array<any> | any) => {
+  let sids: Array<string> = []
+  if (listData instanceof Array) {
+    listData.forEach((row) => {
+      sids.push(row?.id ? row.id : row)
+    })
+  } else {
+    sids.push(listData.id)
+  }
+  loading.value = true
+  apiDelete(sids).then((result) => {
+    if (result.success) {
+      message.success('删除成功')
+      /* 计算是否是最后一页 */
+      let num = total.value % pagination.value.pageSize
+      if (sids.length == num || sids.length == pagination.value.pageSize) {
+        pagination.value.current = pagination.value.current - 1
+      }
+      doQuery()
+    } else {
+      message.error(result.msg)
+    }
+  }).catch((error) => {
+    console.error(error)
+    loading.value = false
+  })
+}
+/** =========== 删除 ====================== */
+
 </script>
 <style lang='less' scoped>
 .role-ms {

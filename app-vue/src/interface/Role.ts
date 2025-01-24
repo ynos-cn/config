@@ -15,6 +15,7 @@ export interface RoleStruct {
     permissionTypes?: string[]
     /** 人员列表 */
     persons?: Person[]
+    [key: string]: any
 }
 
 
@@ -22,7 +23,7 @@ export interface Person {
     /** 名称 */
     names?: string
     /** 组织/机构ID */
-    orgId?: number
+    orgIds?: string
     /** 角色类型，1、OA帐号；2、机构 */
     type?: number
 }

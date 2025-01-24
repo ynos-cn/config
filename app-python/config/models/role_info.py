@@ -55,7 +55,7 @@ class RoleRelation(models.Model):
     user_type = models.SmallIntegerField(verbose_name="角色类型，1、OA帐号；2、机构")
     role_id = models.IntegerField(verbose_name="角色ID")
     username_list = models.TextField(verbose_name="用户list")
-    org_id = models.IntegerField(verbose_name="分配的组织ID")
+    org_list = models.TextField(verbose_name="用户list")
 
     class Meta:
         db_table = "tb_role_relation"  # 数据库表名
@@ -69,7 +69,6 @@ class RoleRelationSerializer(serializers.ModelSerializer):
     userType = serializers.CharField(source="user_type", read_only=True)
     roleId = serializers.CharField(source="role_id", read_only=True)
     names = serializers.CharField(source="username_list", read_only=True)
-    orgId = serializers.CharField(source="org_id", read_only=True)
 
     class Meta:
         model = RoleRelation
@@ -81,6 +80,5 @@ class RoleRelationSerializer(serializers.ModelSerializer):
         representation["userType"] = representation.pop("user_type")
         representation["roleId"] = representation.pop("role_id")
         representation["names"] = representation.pop("username_list")
-        representation["orgId"] = representation.pop("org_id")
 
         return representation

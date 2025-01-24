@@ -57,7 +57,7 @@ export interface BaseStruct {
   /** 更新人 */
   updater?: string
   /** 所属机构id */
-  orgId?: string
+  orgId?: number
 }
 
 /** 返回上一页数据 */

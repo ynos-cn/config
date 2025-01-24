@@ -142,7 +142,7 @@ def create(request: HttpRequest):
                     relation_table = RoleRelation._meta.db_table
                     insert_relation_sql = f"""
                     INSERT INTO {relation_table} 
-                    (app_id, user_type, role_id, username_list, org_id)
+                    (app_id, user_type, role_id, username_list, org_list)
                     VALUES (%s, %s, %s, %s, %s)
                     """
                     # 构建参数列表（防御性处理）
@@ -153,15 +153,15 @@ def create(request: HttpRequest):
 
                         p_type = person.get("type")
                         names = person.get("names", "")
-                        org_id = person.get("orgId")
+                        org_list = person.get("orgIds")
 
                         # 类型校验
                         if p_type not in [1, 2]:
                             raise ValueError(f"无效的用户类型: {p_type}")
 
                         # 机构ID校验（当类型为机构时必填）
-                        if p_type == 2 and not org_id:
-                            raise ValueError("机构类型必须提供orgId")
+                        if p_type == 2 and not org_list:
+                            raise ValueError("机构类型必须提供orgIds")
 
                         params.append(
                             (
@@ -173,7 +173,7 @@ def create(request: HttpRequest):
                                     if isinstance(names, list)
                                     else str(names)
                                 ),
-                                org_id,
+                                org_list,
                             )
                         )
 
@@ -379,7 +379,7 @@ def update(request: HttpRequest):
                     if isinstance(persons, list) and persons:
                         insert_relation_sql = f"""
                         INSERT INTO {relation_table} 
-                        (app_id, user_type, role_id, username_list, org_id)
+                        (app_id, user_type, role_id, username_list, org_list)
                         VALUES (%s, %s, %s, %s, %s)
                         """
                         # 构建参数列表
@@ -390,15 +390,15 @@ def update(request: HttpRequest):
 
                             p_type = person.get("type")
                             names = person.get("names", "")
-                            org_id = person.get("orgId")
+                            org_list = person.get("orgIds")
 
                             # 类型校验
                             if p_type not in [1, 2]:
                                 raise ValueError(f"无效的用户类型: {p_type}")
 
                             # 机构ID校验（当类型为机构时必填）
-                            if p_type == 2 and not org_id:
-                                raise ValueError("机构类型必须提供orgId")
+                            if p_type == 2 and not org_list:
+                                raise ValueError("机构类型必须提供orgIds")
 
                             params.append(
                                 (
@@ -410,7 +410,7 @@ def update(request: HttpRequest):
                                         if isinstance(names, list)
                                         else str(names)
                                     ),
-                                    org_id,
+                                    org_list,
                                 )
                             )
 
@@ -615,8 +615,8 @@ def get_role_data_sql(
                 CONCAT(
                     '{{"type":', rr.user_type, ',',
                     '"names":"', REPLACE(rr.username_list, '"', '\\"'), '"',
-                    CASE WHEN rr.org_id IS NOT NULL 
-                        THEN CONCAT(',"orgId":', rr.org_id) 
+                    CASE WHEN rr.org_list IS NOT NULL 
+                        THEN CONCAT(',"orgIds":"', REPLACE(rr.org_list, '"', '\\"'), '"')  # 新增双引号包裹
                         ELSE '' END,
                     '}}'
                 ) SEPARATOR ','
