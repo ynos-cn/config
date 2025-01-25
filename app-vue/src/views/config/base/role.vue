@@ -18,10 +18,10 @@
       </div>
     </template>
     <div class="role-ms">
-      <div class="role-ms-item">
+      <!-- <div class="role-ms-item">
         <span>我的角色</span>
         <span>xxx;</span>
-      </div>
+      </div> -->
       <div class="role-ms-item">
         <span>所有角色</span>
         <span style="cursor: pointer; color: #0052d9;" @click="operateFn">新建角色</span>

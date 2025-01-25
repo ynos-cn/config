@@ -3,8 +3,10 @@ from django.core.paginator import Paginator
 from utils.base_delete import delete_model_instances
 from utils.base_query import (
     delete_user_organizations,
+    get_all_parent_orgs,
     get_filter,
     get_sorter,
+    get_sorter_sql,
     get_user_organizations,
     getBaseParams,
 )
@@ -13,7 +15,7 @@ from utils.utils import (
     json_response,
     new_call_id,
 )
-from ..models import EnvInfo, CustomUser, Project, ProjectSerializer
+from ..models import EnvInfo, CustomUser, Project, ProjectSerializer, RoleRelation
 from rest_framework.parsers import JSONParser
 from utils.decorators import GET, POST, auth_user, DELETE
 from utils.log import logger
@@ -317,71 +319,141 @@ def get_id(request: HttpRequest, id: str):
 @POST("find")
 @auth_user()
 def find(request: HttpRequest):
-    print(f"\n")
-    logger.info("============= 进入 项目查询 =============")
+    """
+    项目查询接口（SQL优化版）
+    优化内容：
+    1. 原生SQL实现复杂查询
+    2. 多表关联权限控制
+    3. 机构层级权限处理
+    4. 防御性分页参数处理
+    """
+    print("\n")
+    logger.info("============= 项目查询流程 =============")
     logger.info(f"操作人: {request.user}")
 
-    # 获取查询参数
-    body = JSONParser().parse(request)
-    logger.info(f"获取到的参数: {body}")
-
-    # 处理分页参数
-    limit = body.get("limit", 10)
-    page = body.get("page", 1)
-
-    # 排序
-    sorter = get_sorter(body)
-
-    if body.get("body") != None:
-        logger.info(f"body = {body.get('body')}")
-        query_data = get_filter(
-            body.get("body"), ["app_name", "app_id", "project_managers", "description"]
-        )
-    else:
-        query_data = Q()
-    query_data &= ~Q(is_delete="1")
-
-    # 获取当前登录用户
-    current_user = request.user.get("username")
-    current_depart_id = request.user.get("orgId")
-
-    # 构建新的查询条件
-    # 1. creator 是当前登录人 或 project_managers 中包含当前登录人
-    # 添加 creator 条件
-    query_data &= Q(creator=current_user)
-    # 处理 project_managers 条件
-    # 使用正则表达式确保匹配整个单词
-    query_data |= Q(project_managers__iregex=r"\b" + current_user + r"\b")
-
-    # 2. 或者 role 表中 app_id 与项目 app_id 相等且 persons 中包含当前登录人；或者当前登录人的组织在 depart_ids 中
-    # 假设 Role 模型中有一个 'app_id' 和 'persons' 字段
-    # query_data |= Q(
-    #     id__in=Role.objects.filter(
-    #         app_id=OuterRef("id"), persons__contains=current_user
-    #     ).values("app_id")
-    # )
-    # query_data |= Q(depart_ids__contains=current_depart_id)
-
     try:
-        logger.info(f"查询条件 = {query_data}")
+        # ========================== 参数解析 ==========================
+        body = JSONParser().parse(request)
+        logger.info(f"原始请求参数: {body}")
 
-        # 查询用户 进行分页查询
-        record = Project.objects.using("config_db").filter(query_data).order_by(*sorter)
-        total = record.count()
+        # 分页参数处理
+        page = max(1, int(body.get("page", 1)))
+        limit = max(1, int(body.get("limit", 10)))
 
-        if limit != -1:
-            paginator = Paginator(record, limit)
-            record = paginator.get_page(page)
+        # 排序处理
+        order_by = get_sorter_sql(body, {"create_time": "p"})
 
-        list_data = ProjectSerializer(record, many=True)
-        # 返回数据
-        return JsonResponse(
-            json_response(msg="查询成功", data=list_data.data, total=total), safe=False
+        # ========================== 权限参数准备 ==========================
+        current_user = request.user.get("username")
+        current_org_id = request.user.get("orgId")
+        allowed_org_ids = get_all_parent_orgs(
+            int(current_org_id)
+        )  # 获取当前机构及所有父机构ID
+
+        # ========================== SQL构建 ==========================
+        base_query = f"""
+        SELECT 
+            p.id,
+            p.app_name,
+            p.app_id,
+            p.project_managers,
+            p.description,
+            p.create_time,
+            p.update_time
+        FROM {Project._meta.db_table} p
+        WHERE p.is_delete IS NULL
+        """
+
+        # 基础条件列表
+        conditions = []
+        params = []
+
+        # -------------------------- 关键词搜索 --------------------------
+        if body.get("keywords"):
+            keywords = f"%{body['keywords']}%"
+            search_fields = ["app_name", "app_id", "description"]
+            search_conds = " OR ".join([f"{field} LIKE %s" for field in search_fields])
+            conditions.append(f"({search_conds})")
+            params.extend([keywords] * len(search_fields))
+
+        # -------------------------- 权限过滤条件 --------------------------
+        permission_condition = f"""
+        p.creator = '{current_user}'
+        OR p.project_managers REGEXP '\\b{current_user}\\b'
+        OR EXISTS (
+            SELECT 1
+            FROM {RoleRelation._meta.db_table} rr
+            WHERE rr.app_id = p.app_id
+            AND (
+                /* 用户类型权限 */
+                (rr.user_type = 1 
+                 AND rr.username_list LIKE %s)
+                OR
+                /* 机构类型权限 */
+                (rr.user_type = 2 
+                 AND rr.org_list IN ({','.join(['%s']*len(allowed_org_ids))}))
+            )
         )
-    except Exception as e:
-        logger.error(f"查询失败: {e}")
+        """
+        conditions.append(permission_condition)
+        params.append(f"%{current_user}%")
+        params.extend(allowed_org_ids)
+
+        # 组合所有条件
+        if conditions:
+            base_query += " AND (" + " AND ".join(conditions) + ")"
+
+        # 排序处理
+        if order_by:
+            base_query += f" {order_by}"
+
+        # 分页处理 如果 limit 为 -1 则不进行分页
+        if body.get("limit") != -1:
+            base_query += f" LIMIT {limit} OFFSET {(page-1)*limit}"
+
+        # ========================== 执行查询 ==========================
+        with connections["config_db"].cursor() as cursor:
+            try:
+                # 总数查询
+                count_sql = f"SELECT COUNT(*) FROM ({base_query}) AS total"
+                cursor.execute(count_sql, params)
+                total = cursor.fetchone()[0]
+
+                # 数据查询
+                cursor.execute(base_query, params)
+                results = cursor.fetchall()
+
+            except DatabaseError as e:
+                logger.error(f"SQL执行失败: {cursor._last_executed} | 错误: {str(e)}")
+                return JsonResponse(
+                    json_response(code=500, msg="数据库查询失败", success=False),
+                    status=500,
+                )
+
+        # ========================== 结果处理 ==========================
+        project_list = []
+        for row in results:
+            project_list.append(
+                {
+                    "id": row[0],
+                    "appName": row[1],
+                    "appId": row[2],
+                    "projectManagers": row[3],
+                    "description": row[4],
+                    "createTime": format_datetime(row[5]),
+                    "updateTime": format_datetime(row[6]),
+                }
+            )
+
         return JsonResponse(
-            json_response(code=500, msg="查询失败", success=False), status=500
+            json_response(code=200, msg="查询成功", data=project_list, total=total),
+            safe=False,
+        )
+
+    except Exception as e:
+        logger.error(f"系统异常: {str(e)}", exc_info=True)
+        return JsonResponse(
+            json_response(code=500, msg="服务器内部错误", success=False), status=500
         )
 
 
