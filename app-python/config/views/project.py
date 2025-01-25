@@ -347,7 +347,7 @@ def find(request: HttpRequest):
         current_user = request.user.get("username")
         current_org_id = request.user.get("orgId")
         allowed_org_ids = get_all_parent_orgs(
-            int(current_org_id)
+            current_org_id
         )  # 获取当前机构及所有父机构ID
 
         # ========================== SQL构建 ==========================
