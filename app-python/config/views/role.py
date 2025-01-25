@@ -619,7 +619,9 @@ def get_role_data_sql(
                         THEN CONCAT(',"orgIds":"', REPLACE(rr.org_list, '"', '\\"'), '"')  # 新增双引号包裹
                         ELSE '' END,
                     '}}'
-                ) SEPARATOR ','
+                ) 
+                ORDER BY rr.user_type
+                SEPARATOR ','
             ), 
             ''
         ) AS persons

@@ -46,7 +46,7 @@
           <span style="padding-left: 20px;" class="desc-text">包含读配置的权限</span>
           <div class="permission" v-if="permission == 2">
             <a-checkbox-group @change="onCheckbox" v-model:value="permissions"
-              :options="PermissionType.filter(e => e.type == 2)" />
+              :options="PermissionTypeList.filter(e => e.type == 2)" />
           </div>
         </a-radio>
         <a-radio :style="{ ...radioStyle, marginTop: permission == 2 ? '32px' : 0 }" :value="6">管理分组
@@ -58,15 +58,24 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { apiSave } from '@/api/role-service'
 import { ZSelect, OrgTreeSelect } from '@/components';
 import { message } from 'ant-design-vue'
 import { PlusCircleOutlined } from '@ant-design/icons-vue'
 import { Person, RoleStruct } from '@/interface';
 import { useAppStore } from '@/store/app'
-import { PermissionType } from './setting'
+import { PermissionTypeList, PermissionTypeEnum } from './setting'
 import { useRoute } from 'vue-router'
+
+const props = defineProps({
+  pFormData: {
+    type: Object,
+    default: () => {
+      return {}
+    }
+  }
+})
 
 const route = useRoute()
 const emit = defineEmits(['close'])
@@ -77,6 +86,7 @@ const formState = reactive<RoleStruct>({
   permissionTypes: [],
   person: '',
 });
+
 
 /** ====================== 权限 ==================== */
 const permission = ref(1)
@@ -149,6 +159,64 @@ const onClose = (names) => {
 }
 /** ====================== 添加用户 ====================== */
 
+/** ====================== 【处理】传入进来的数据 ==================== */
+watch(() => props.pFormData, (val) => {
+  console.log(val);
+  if (val?.id) {
+    formState.name = val.name
+    formState.object = val.object
+    formState.id = val.id
+
+    if ((val?.permissionTypes as Array<string>).includes(PermissionTypeEnum[1])) {
+      permission.value = PermissionTypeEnum.PERMISSION_LOOK
+    } else if ((val?.permissionTypes as Array<string>).includes(PermissionTypeEnum[6])) {
+      permission.value = PermissionTypeEnum.PERMISSION_RELEASE
+    } else {
+      permission.value = 2;
+      permissions.value = [];
+      ; (val?.permissionTypes as Array<string>).map(v => {
+        permissions.value.push(PermissionTypeEnum[v])
+      })
+    }
+    if (val?.persons && Array.isArray(val?.persons)) {
+      let OAUser: Array<any> = []
+      let OAOrg: Array<any> = []
+      val?.persons.map(e => {
+        if (e.type == 1) {
+          e?.names?.split(';').map(v => {
+            let index = OAUser.findIndex(e => e.names == v)
+            if (index <= -1) {
+              OAUser.push({
+                names: v,
+                type: 1,
+                orgIds: undefined
+              })
+            }
+          })
+        } else if (e.type == 2) {
+          let names = e?.names?.split(';')
+          let orgIds = e?.orgIds?.split(';')
+          // 判断哪个长度最短则遍历哪个
+          let len = names.length < orgIds.length ? names.length : orgIds.length
+          for (let i = 0; i < len; i++) {
+            let index = OAOrg.findIndex(e => e.names == names[i])
+            if (index <= -1) {
+              OAOrg.push({
+                names: names[i],
+                type: 2,
+                orgIds: orgIds[i]
+              })
+            }
+          }
+        }
+      })
+      persons.value = [...OAUser, ...OAOrg]
+      formState.person = persons.value.map(e => e.names).join(';')
+    }
+  }
+}, { immediate: true, deep: true })
+/** ====================== 【处理】传入进来的数据 ==================== */
+
 /** ============= 保存/发布 ============= */
 const onFinish = () => {
   formRef.value.validate().then(() => {
@@ -170,6 +238,7 @@ const onFinish = () => {
     })
 
     let data = {
+      id: formState.id,
       appId: route.params.id,
       name: formState.name,
       object: formState.object,
@@ -177,7 +246,6 @@ const onFinish = () => {
       permissionTypes,
       persons: _persons
     }
-    console.log(data, 'data');
     doSave(data)
   })
 };

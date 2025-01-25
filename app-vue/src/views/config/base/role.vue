@@ -24,7 +24,7 @@
       </div>
       <div class="role-ms-item">
         <span>所有角色</span>
-        <span style="cursor: pointer; color: #0052d9;" @click="onAddRole">新建角色</span>
+        <span style="cursor: pointer; color: #0052d9;" @click="operateFn">新建角色</span>
       </div>
     </div>
     <BaseTable :columns="columns" :dataSource="listData" :pagination="pagination" :loading="loading"
@@ -39,7 +39,7 @@
           {{ getPermissionTypes(record.permissionTypes) }}
         </div>
         <div v-if="column.dataIndex === 'operation'">
-          <!-- <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.edit)">编辑 </a-button> -->
+          <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.edit)">编辑 </a-button>
           <a-popconfirm title="是否删除该数据?" ok-text="确认" cancel-text="取消" @confirm="toDelete(record)">
             <a-button class="options-btn" danger size="small">删除</a-button>
           </a-popconfirm>
@@ -48,8 +48,8 @@
     </BaseTable>
   </a-card>
 
-  <Modal v-model:open="visible" title="创建项目" :width="888" :mask="false" @ok="handleOk">
-    <RoleModify ref="roleModifyRef" @close="goBack" />
+  <Modal v-model:open="visible" title="创建项目" :destroyOnClose="true" :width="888" :mask="false" @ok="handleOk">
+    <RoleModify ref="roleModifyRef" :p-form-data="formData" @close="goBack" />
   </Modal>
 </template>
 
@@ -59,10 +59,10 @@ import { ref, watch } from 'vue';
 import { apiFind, apiDelete } from '@/api/role-service';
 import BaseTable from '@/components/base-table';
 import { RoleStruct } from '@/interface/Role';
-import { useManage } from '@/hooks/useManage';
+import { useManage, OperateCMD } from '@/hooks/useManage';
 import { BaseParams } from '@/interface/base';
 import { message, Modal } from 'ant-design-vue';
-import { PermissionType } from './setting'
+import { PermissionTypeList } from './setting'
 import RoleModify from './roleModify.vue'
 
 const listData = ref<Array<RoleStruct>>([])
@@ -95,7 +95,7 @@ const columns = [
   }
 ]
 
-const { pagination, total, handleTableChange, visible, command, formData, goBack, route } = useManage(doQuery)
+const { pagination, total, handleTableChange, visible, formData, goBack, route, operateFn } = useManage(doQuery)
 
 function doQuery() {
   if (!route.params?.id) {
@@ -130,9 +130,6 @@ watch(() => route.params, (val) => {
 
 /** =========== 新建角色 ====================== */
 const roleModifyRef = ref()
-const onAddRole = () => {
-  visible.value = true
-}
 const handleOk = (e: MouseEvent) => {
   roleModifyRef.value.onFinish()
 };
@@ -148,7 +145,7 @@ const getPermissionTypes = (permissionTypes) => {
     arr = permissionTypes
   }
   arr.map(v => {
-    let label = PermissionType.find(item => item.name === v)?.label
+    let label = PermissionTypeList.find(item => item.name === v)?.label
     if (label) {
       strArr.push(label)
     }
