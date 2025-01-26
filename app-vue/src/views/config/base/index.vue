@@ -80,6 +80,7 @@
     </a-card>
 
     <RoleView />
+    <CustomUsers />
   </a-spin>
 </template>
 
@@ -92,6 +93,7 @@ import { QuestionCircleOutlined, ExclamationCircleOutlined } from '@ant-design/i
 import { message, Modal } from 'ant-design-vue';
 import ZSelect from '@/components/z-select'
 import RoleView from './role.vue'
+import CustomUsers from './customUsers.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -18,7 +18,6 @@ export interface RoleStruct {
     [key: string]: any
 }
 
-
 export interface Person {
     /** 名称 */
     names?: string
@@ -26,4 +25,13 @@ export interface Person {
     orgIds?: string
     /** 角色类型，1、OA帐号；2、机构 */
     type?: number
+}
+
+/** 自定义用户 */
+export interface CustomUser {
+    userName?: string
+    userId?: string
+    secretKey?: string
+    enableStatus?: number
+    [key: string]: any
 }
