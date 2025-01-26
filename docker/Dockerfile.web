@@ -17,7 +17,8 @@ RUN npm cache clean --force
 RUN npm config set registry https://registry.npmmirror.com/
 
 # 安装项目依赖
-RUN npm install && npm run build
+RUN npm install 
+RUN npm run build
 
 # 使用 Nginx 来提供静态文件
 FROM nginx:stable-alpine
