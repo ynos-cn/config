@@ -1,6 +1,4 @@
 from django.http import HttpRequest, JsonResponse
-from django.core.paginator import Paginator
-from utils.base_delete import delete_model_instances
 from utils.base_query import (
     delete_user_organizations,
     get_filter,

@@ -21,7 +21,9 @@
       @change="handleTableChange" bordered class="table-list">
       <template #bodyCell="{ column, record }">
         <div v-if="column.dataIndex === 'operation'">
-          <a-button class="options-btn" size="small" @click="operateFn(record, OperateCMD.edit)">编辑 </a-button>
+          <a-button class="options-btn" size="small" @click="onEditStatus(record)">
+            {{ record.enableStatus === 1 ? '禁用' : '启用' }}
+          </a-button>
           <a-popconfirm title="是否删除该数据?" ok-text="确认" cancel-text="取消" @confirm="toDelete(record)">
             <a-button class="options-btn" danger size="small">删除</a-button>
           </a-popconfirm>
@@ -52,9 +54,9 @@
 </template>
 
 <script lang="ts" setup>
-import { QuestionCircleOutlined } from '@ant-design/icons-vue';
-import { reactive, ref, watch } from 'vue';
-import { apiFind, apiDelete } from '@/api/role-service';
+import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue';
+import { createVNode, reactive, ref, watch } from 'vue';
+import { apiFind, apiDelete, apiSave, updateStatus } from '@/api/custom-user-service';
 import BaseTable from '@/components/base-table';
 import { CustomUser } from '@/interface/Role';
 import { useManage, OperateCMD } from '@/hooks/useManage';
@@ -67,30 +69,31 @@ const columns = [
   {
     title: '用户名',
     dataIndex: 'userName',
-    align: "left",
+    align: "center",
   },
   {
     title: '用户ID(userId)',
     dataIndex: 'userId',
-    align: "left",
+    align: "center",
   },
   {
     title: '密钥(secretKey)',
     dataIndex: 'secretKey',
-    align: "left",
+    align: "center",
   },
   {
     title: '状态',
     dataIndex: 'enableStatus',
-    align: "left",
-    customRender: (text: any) => {
-      return text == 1 ? '已启用' : '禁用'
-    }
+    align: "center",
+    customRender: ({ text }) => {
+      return text == 1 ? '已启用' : '已禁用'
+    },
+    width: 100
   },
   {
     title: '操作',
     dataIndex: 'operation',
-    align: "left",
+    align: "center",
   }
 ]
 
@@ -136,27 +139,56 @@ const handleOk = (e: MouseEvent) => {
   formRef.value.validate().then(() => {
     let data = {
       appId: route.params?.id,
-      ...formState
+      ...formState,
+      userName: `Config_${formState.userName}`,
     }
-    console.log(data);
     doSave(data)
   })
 };
 const doSave = (data: any) => {
-  // apiSave(data).then(res => {
-  //   if (res.success) {
-  //     message.success('新增成功')
-  //     emit('close', {
-  //       ...data,
-  //     })
-  //   } else {
-  //     message.error(res.msg)
-  //   }
-  // }).catch(err => {
-  //   console.error(err)
-  // })
+  apiSave(data).then(res => {
+    if (res.success) {
+      message.success('新增成功')
+      goBack(true)
+    } else {
+      message.error(res.msg)
+    }
+  }).catch(err => {
+    console.error(err)
+  })
 }
 /** =========== 新建 ====================== */
+
+/** =========== 修改状态 ================== */
+const onEditStatus = (record) => {
+  let content = `确认启用用户${record.userName}吗？(启用成功后30秒生效)`
+  if (record.enableStatus == 1) {
+    content = `禁用自定义用户会导致无法使用该用户进行API访问。\n\n确认禁用用户${record.userName}吗？(禁用成功后30秒生效)`
+  }
+  Modal.confirm({
+    title: '确认',
+    icon: createVNode(ExclamationCircleOutlined),
+    content,
+    width: 888,
+    onOk: () => {
+      updateStatus({
+        id: record.id,
+        appId: record.appId,
+        enableStatus: record.enableStatus == 1 ? 0 : 1,
+      }).then((res) => {
+        if (res.success) {
+          message.success('更新成功')
+          Object.assign(record, {
+            enableStatus: record.enableStatus == 1 ? 0 : 1,
+          })
+        } else {
+          message.error(res.msg)
+        }
+      })
+    },
+  })
+}
+/** =========== 修改状态 ================== */
 
 
 /** =========== 删除 ====================== */

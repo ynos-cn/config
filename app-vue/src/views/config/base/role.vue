@@ -71,27 +71,27 @@ const columns = [
   {
     title: '角色名称',
     dataIndex: 'name',
-    align: "left",
+    align: "center",
   },
   {
     title: '人员列表',
     dataIndex: 'persons',
-    align: "left",
+    align: "center",
   },
   {
     title: '配置分组名',
     dataIndex: 'object',
-    align: "left",
+    align: "center",
   },
   {
     title: '权限类型',
     dataIndex: 'permissionTypes',
-    align: "left",
+    align: "center",
   },
   {
     title: '操作',
     dataIndex: 'operation',
-    align: "left",
+    align: "center",
   }
 ]
 
